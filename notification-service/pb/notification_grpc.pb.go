@@ -20,6 +20,9 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	NotificationService_SendRegistrasiEmailNotification_FullMethodName = "/notificationpb.NotificationService/SendRegistrasiEmailNotification"
+	NotificationService_SendInvoiceEmailNotification_FullMethodName    = "/notificationpb.NotificationService/SendInvoiceEmailNotification"
+	NotificationService_SendGoodsNotification_FullMethodName           = "/notificationpb.NotificationService/SendGoodsNotification"
+	NotificationService_SendGoodsArrivalNotification_FullMethodName    = "/notificationpb.NotificationService/SendGoodsArrivalNotification"
 )
 
 // NotificationServiceClient is the client API for NotificationService service.
@@ -27,6 +30,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotificationServiceClient interface {
 	SendRegistrasiEmailNotification(ctx context.Context, in *RegistrationData, opts ...grpc.CallOption) (*WebResponse, error)
+	SendInvoiceEmailNotification(ctx context.Context, in *InvoiceData, opts ...grpc.CallOption) (*WebResponse, error)
+	SendGoodsNotification(ctx context.Context, in *SendGoodsData, opts ...grpc.CallOption) (*WebResponse, error)
+	SendGoodsArrivalNotification(ctx context.Context, in *SendGoodsData, opts ...grpc.CallOption) (*WebResponse, error)
 }
 
 type notificationServiceClient struct {
@@ -47,11 +53,44 @@ func (c *notificationServiceClient) SendRegistrasiEmailNotification(ctx context.
 	return out, nil
 }
 
+func (c *notificationServiceClient) SendInvoiceEmailNotification(ctx context.Context, in *InvoiceData, opts ...grpc.CallOption) (*WebResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WebResponse)
+	err := c.cc.Invoke(ctx, NotificationService_SendInvoiceEmailNotification_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notificationServiceClient) SendGoodsNotification(ctx context.Context, in *SendGoodsData, opts ...grpc.CallOption) (*WebResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WebResponse)
+	err := c.cc.Invoke(ctx, NotificationService_SendGoodsNotification_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notificationServiceClient) SendGoodsArrivalNotification(ctx context.Context, in *SendGoodsData, opts ...grpc.CallOption) (*WebResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WebResponse)
+	err := c.cc.Invoke(ctx, NotificationService_SendGoodsArrivalNotification_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationServiceServer is the server API for NotificationService service.
 // All implementations must embed UnimplementedNotificationServiceServer
 // for forward compatibility.
 type NotificationServiceServer interface {
 	SendRegistrasiEmailNotification(context.Context, *RegistrationData) (*WebResponse, error)
+	SendInvoiceEmailNotification(context.Context, *InvoiceData) (*WebResponse, error)
+	SendGoodsNotification(context.Context, *SendGoodsData) (*WebResponse, error)
+	SendGoodsArrivalNotification(context.Context, *SendGoodsData) (*WebResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
@@ -64,6 +103,15 @@ type UnimplementedNotificationServiceServer struct{}
 
 func (UnimplementedNotificationServiceServer) SendRegistrasiEmailNotification(context.Context, *RegistrationData) (*WebResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRegistrasiEmailNotification not implemented")
+}
+func (UnimplementedNotificationServiceServer) SendInvoiceEmailNotification(context.Context, *InvoiceData) (*WebResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendInvoiceEmailNotification not implemented")
+}
+func (UnimplementedNotificationServiceServer) SendGoodsNotification(context.Context, *SendGoodsData) (*WebResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendGoodsNotification not implemented")
+}
+func (UnimplementedNotificationServiceServer) SendGoodsArrivalNotification(context.Context, *SendGoodsData) (*WebResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendGoodsArrivalNotification not implemented")
 }
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 func (UnimplementedNotificationServiceServer) testEmbeddedByValue()                             {}
@@ -104,6 +152,60 @@ func _NotificationService_SendRegistrasiEmailNotification_Handler(srv interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_SendInvoiceEmailNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InvoiceData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendInvoiceEmailNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_SendInvoiceEmailNotification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendInvoiceEmailNotification(ctx, req.(*InvoiceData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotificationService_SendGoodsNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendGoodsData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendGoodsNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_SendGoodsNotification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendGoodsNotification(ctx, req.(*SendGoodsData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotificationService_SendGoodsArrivalNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendGoodsData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendGoodsArrivalNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_SendGoodsArrivalNotification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendGoodsArrivalNotification(ctx, req.(*SendGoodsData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationService_ServiceDesc is the grpc.ServiceDesc for NotificationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +216,18 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendRegistrasiEmailNotification",
 			Handler:    _NotificationService_SendRegistrasiEmailNotification_Handler,
+		},
+		{
+			MethodName: "SendInvoiceEmailNotification",
+			Handler:    _NotificationService_SendInvoiceEmailNotification_Handler,
+		},
+		{
+			MethodName: "SendGoodsNotification",
+			Handler:    _NotificationService_SendGoodsNotification_Handler,
+		},
+		{
+			MethodName: "SendGoodsArrivalNotification",
+			Handler:    _NotificationService_SendGoodsArrivalNotification_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

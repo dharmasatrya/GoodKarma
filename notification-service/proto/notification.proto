@@ -8,6 +8,9 @@ option go_package = "./pb"; // Updated to match the generated Go package
 
 service NotificationService {
     rpc SendRegistrasiEmailNotification (RegistrationData) returns (WebResponse);
+    rpc SendInvoiceEmailNotification (InvoiceData) returns (WebResponse);
+    rpc SendGoodsNotification (SendGoodsData) returns (WebResponse);
+    rpc SendGoodsArrivalNotification (SendGoodsData) returns (WebResponse);
 }
 
 message RegistrationData {
@@ -27,4 +30,12 @@ message InvoiceData{
     string description = 5;
     string link = 6;
     string ammount = 7;
+}
+
+message SendGoodsData{
+    string email = 1;
+    string name = 2;
+    string status = 3;
+    string alamat = 4;
+    string ammount = 5;
 }
