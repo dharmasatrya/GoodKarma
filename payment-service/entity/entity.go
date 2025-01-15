@@ -21,8 +21,32 @@ type Invoice struct {
 }
 
 type UpdateWalleetBalanceRequest struct {
-	UserID     uint32 `bson:"user_id"`
-	ExternalID string `bson:"external_id"`
-	Amount     uint32 `bson:"amount"`
-	Type       string `bson:"type"`
+	UserID string `bson:"user_id"`
+	Amount uint32 `bson:"amount"`
+	Type   string `bson:"type"`
+}
+
+type WithdrawRequest struct {
+	UserId string `bson:"user_id"`
+	Amount uint32 `bson:"amount"`
+}
+
+type XenditInvoiceRequest struct {
+	ExternalId  string
+	Amount      int
+	Description string
+	FirstName   string
+	LastName    string
+	Email       string
+	Phone       string
+}
+
+type XenditDisbursementRequest struct {
+	ExternalId        string
+	Amount            int
+	BankCode          string
+	AccountHolderName string
+	BankAccountNumber string
+	Description       string
+	Email             string
 }

@@ -34,8 +34,8 @@ func main() {
 
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	borrowService := service.NewPaymentService(paymentRepository)
-	pb.RegisterPaymentServiceServer(grpcServer, borrowService)
+	paymentService := service.NewPaymentService(paymentRepository)
+	pb.RegisterPaymentServiceServer(grpcServer, paymentService)
 
 	log.Println("Server is running on port 50053...")
 	if err := grpcServer.Serve(listen); err != nil {

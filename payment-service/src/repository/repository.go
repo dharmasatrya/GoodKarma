@@ -2,18 +2,22 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"goodkarma-payment-service/entity"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type PaymentRepository interface {
 	CreateWallet(input entity.Wallet) (*entity.Wallet, error)
-	// UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error)
-	// Withdraw(userId string) (*entity.Wallet, error)
-	// CreateInvoice(input entity.Invoice) (string, error)
+	UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error)
+	Withdraw(ctx context.Context, input entity.WithdrawRequest) (*entity.Wallet, error)
 }
 
 type paymentRepository struct {
@@ -44,4 +48,82 @@ func (r *paymentRepository) CreateWallet(input entity.Wallet) (*entity.Wallet, e
 	}
 
 	return &wallet, nil
+}
+
+func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error) {
+
+	var wallet entity.Wallet
+
+	err := r.db.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("book not found")
+		}
+	}
+
+	if input.Type == "money_in" {
+		wallet.Amount += input.Amount
+	}
+
+	if input.Type == "money_out" {
+		wallet.Amount -= input.Amount
+	}
+
+	var updatedWallet entity.Wallet
+	err1 := r.db.FindOneAndUpdate(
+		ctx,
+		bson.M{"user_id": input.UserID},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&updatedWallet)
+
+	if err1 != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("book not found")
+		}
+		return nil, fmt.Errorf("failed to update book: %w", err)
+	}
+
+	return &updatedWallet, nil
+}
+
+func (r *paymentRepository) Withdraw(ctx context.Context, input entity.WithdrawRequest) (*entity.Wallet, error) {
+	// First find the wallet
+	var wallet entity.Wallet
+	err := r.db.FindOne(ctx, bson.M{"user_id": input.UserId}).Decode(&wallet)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, status.Errorf(codes.NotFound, "wallet not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to find wallet: %v", err)
+	}
+
+	// Check if there's sufficient balance
+	if wallet.Amount < input.Amount {
+		return nil, status.Errorf(codes.FailedPrecondition, "insufficient balance")
+	}
+
+	// Calculate new amount
+	newAmount := wallet.Amount - input.Amount
+
+	// Update the wallet with new amount
+	var updatedWallet entity.Wallet
+	err = r.db.FindOneAndUpdate(
+		ctx,
+		bson.M{"user_id": input.UserId},
+		bson.M{
+			"$set": bson.M{
+				"amount": newAmount,
+			},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&updatedWallet)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, status.Errorf(codes.NotFound, "wallet not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to update wallet: %v", err)
+	}
+
+	return &updatedWallet, nil
 }
