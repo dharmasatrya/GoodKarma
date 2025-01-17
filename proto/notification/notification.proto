@@ -1,1 +1,10 @@
 syntax = "proto3";
+
+package gatewaypb; // Ensure this matches the generated Go package name
+
+import "google/protobuf/empty.proto";
+
+option go_package = "./pb"; // Updated to match the generated Go package
+
+service NotificationService {
+}
