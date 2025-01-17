@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"goodkarma-user-service/entity"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -41,6 +42,10 @@ func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.
 		return nil, err
 	}
 
+	if err := ur.validateCreateUser(request); err != nil {
+		return nil, err
+	}
+
 	newUser := entity.User{
 		ID:       primitive.NewObjectID(),
 		Username: request.Username,
@@ -71,4 +76,22 @@ func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.
 	}
 
 	return &newUser, nil
+}
+
+func (ur *userRepository) validateCreateUser(request entity.CreateUserRequest) error {
+	userCollection := ur.GetUserCollection()
+
+	if checkUsername, _ := userCollection.CountDocuments(context.Background(), primitive.M{"username": request.Username}); checkUsername > 0 {
+		return fmt.Errorf("username %v already exists", request.Username)
+	}
+
+	if checkEmail, _ := userCollection.CountDocuments(context.Background(), primitive.M{"email": request.Email}); checkEmail > 0 {
+		return fmt.Errorf("email %v already exists", request.Email)
+	}
+
+	if checkPhone, _ := userCollection.CountDocuments(context.Background(), primitive.M{"phone": request.Phone}); checkPhone > 0 {
+		return fmt.Errorf("phone %v already exists", request.Phone)
+	}
+
+	return nil
 }
