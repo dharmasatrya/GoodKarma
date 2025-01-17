@@ -26,3 +26,14 @@ type Wallet struct {
 	BankCode          string             `json:"bank_code" bson:"bank_code"`
 	BankAccountNumber string             `json:"bank_account_number" bson:"bank_account_number"`
 }
+
+type CreateUserRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+	FullName string `json:"full_name"`
+	Address  string `json:"address"`
+	Phone    string `json:"phone"`
+	Photo    string `json:"photo"`
+}

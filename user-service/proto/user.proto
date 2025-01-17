@@ -15,7 +15,7 @@ message CreateUserRequest {
     string role = 4;
     string full_name = 5;
     string address = 6;
-    string phone_number = 7;
+    string phone = 7;
     string photo = 8;
 }
 
@@ -40,3 +40,5 @@ message CreateMerchantRequest {
 message CreateMerchantResponse {
     string id = 1;
 }
+
+message Empty {}
