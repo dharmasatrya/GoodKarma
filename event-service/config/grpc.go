@@ -2,9 +2,10 @@ package config
 
 import (
 	"context"
-	"goodkarma-notification-service/middlewares"
-	pb "goodkarma-notification-service/proto"
-	"goodkarma-notification-service/src/service"
+	"goodkarma-event-service/middlewares"
+	pb "goodkarma-event-service/proto"
+	"goodkarma-event-service/src/repository"
+	"goodkarma-event-service/src/service"
 	"log"
 	"net"
 	"os"
@@ -22,7 +23,9 @@ func ListenAndServeGrpc() {
 		log.Fatal(err)
 	}
 
-	notifService := service.NewNotificationService()
+	db := InitDatabase()
+	eventRepository := repository.NewEventRepository(db)
+	notifService := service.NewEventService(eventRepository)
 
 	// Define a custom interceptor for JWT that conditionally skips authentication for register endpoint
 	grpcServer := grpc.NewServer(
@@ -34,7 +37,7 @@ func ListenAndServeGrpc() {
 		),
 	)
 
-	pb.RegisterNotificationServiceServer(grpcServer, notifService)
+	pb.RegisterEventServiceServer(grpcServer, notifService)
 
 	log.Println("\033[36mGRPC server is running on port:", port, "\033[0m")
 	if err := grpcServer.Serve(lis); err != nil {
