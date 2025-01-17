@@ -43,7 +43,7 @@ message UpdateWalleetBalanceResponse {
 }
 
 message WithdrawRequest {
-    string id = 1;
+    uint32 amount = 1;
 }
 
 message WithdrawResponse {

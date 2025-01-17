@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.2
-// source: proto/payment.proto
+// source: payment.proto
 
 package proto
 
@@ -231,5 +231,5 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/payment.proto",
+	Metadata: "payment.proto",
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package notificationpb; // Ensure this matches the generated Go package name
+package gatewaypb; // Ensure this matches the generated Go package name
 
 import "google/protobuf/empty.proto";
 
