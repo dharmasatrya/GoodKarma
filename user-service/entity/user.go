@@ -22,7 +22,7 @@ type Profile struct {
 type Wallet struct {
 	ID                primitive.ObjectID `json:"id" bson:"_id"`
 	UserID            primitive.ObjectID `json:"user_id" bson:"user_id"`
-	BankAccountName   string             `json:"bank_account_name" bson:"bank_account_name"`
+	AccountHolderName string             `json:"account_holder_name" bson:"account_holder_name"`
 	BankCode          string             `json:"bank_code" bson:"bank_code"`
 	BankAccountNumber string             `json:"bank_account_number" bson:"bank_account_number"`
 }
@@ -36,4 +36,10 @@ type CreateUserRequest struct {
 	Address  string `json:"address"`
 	Phone    string `json:"phone"`
 	Photo    string `json:"photo"`
+}
+
+type CreateMerchantRequest struct {
+	AccountHolderName string `json:"account_holder_name"`
+	BankCode          string `json:"bank_code"`
+	BankAccountNumber string `json:"bank_account_number"`
 }
