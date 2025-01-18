@@ -89,6 +89,23 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 	}, nil
 }
 
+func (us *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+	payload := entity.LoginRequest{
+		UsernameOrEmail: req.UsernameOrEmail,
+		Password:        req.Password,
+	}
+
+	result, err := us.userRepository.Login(payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.LoginResponse{
+		Id: result.ID.Hex(),
+	}, nil
+}
+
 func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")

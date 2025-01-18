@@ -43,3 +43,8 @@ type CreateMerchantRequest struct {
 	BankCode          string `json:"bank_code"`
 	BankAccountNumber string `json:"bank_account_number"`
 }
+
+type LoginRequest struct {
+	UsernameOrEmail string `json:"username_or_email"`
+	Password        string `json:"password"`
+}

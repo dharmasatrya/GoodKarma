@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"goodkarma-user-service/entity"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,6 +14,7 @@ import (
 type UserRepository interface {
 	CreateUser(entity.CreateUserRequest) (*entity.User, error)
 	CreateMerchant(entity.CreateUserRequest, entity.CreateMerchantRequest) (*entity.User, error)
+	Login(entity.LoginRequest) (*entity.User, error)
 }
 
 type userRepository struct {
@@ -107,6 +109,32 @@ func (ur *userRepository) CreateMerchant(request entity.CreateUserRequest, reque
 	}
 
 	return user, nil
+}
+
+func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, error) {
+	userCollection := ur.GetUserCollection()
+
+	var user entity.User
+	var filter primitive.M
+
+	if strings.Contains(request.UsernameOrEmail, "@") {
+		filter = primitive.M{"email": request.UsernameOrEmail}
+	} else {
+		filter = primitive.M{"username": request.UsernameOrEmail}
+	}
+
+	err := userCollection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(user)
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (ur *userRepository) validateCreateUser(request entity.CreateUserRequest) error {
