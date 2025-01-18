@@ -43,7 +43,7 @@ func NewRouter() *echo.Echo {
 	// 	event.POST("", eventController.CreateEvent)
 	// 	event.PUT("/:id", eventController.EditEvent)
 	// 	event.GET("", eventController.GetAllEvent)
-	// 	event.GET("/:id", eventController.GetAllEventById)
+	// 	event.GET("/:id", eventController.GetEventById)
 	// 	event.GET("/", eventController.GetAllEventByUserLogin)
 	// 	event.GET("/:category", eventController.GetAllEventByCategory)
 	// }
