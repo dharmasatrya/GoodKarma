@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"goodkarma-payment-service/middleware"
 	"log"
 	"net"
 
-	"goodkarma-payment-service/config"
-	"goodkarma-payment-service/src/repository"
-	"goodkarma-payment-service/src/service"
+	"github.com/dharmasatrya/goodkarma/payment-service/middleware"
 
-	pb "goodkarma-payment-service/proto"
+	"github.com/dharmasatrya/goodkarma/payment-service/config"
+	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
+	"github.com/dharmasatrya/goodkarma/payment-service/src/service"
+
+	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"google.golang.org/grpc"
 )

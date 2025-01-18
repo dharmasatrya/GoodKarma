@@ -1,4 +1,4 @@
-module goodkarma-payment-service
+module github.com/dharmasatrya/goodkarma/payment-service
 
 go 1.23.2
 

@@ -56,5 +56,10 @@ func NewRouter() *echo.Echo {
 	// 	donation.GET("/:id", donationController.GetAllDonationByEventId)
 	// }
 
+	// payment := e.Group("/payments")
+	// payment.GET("/wallets/:id", paymentController.GetWallet)
+	// payment.POST("/withdraw", paymentController.Withdraw)
+	// payment.POST("/invoice", paymentController.CreateInvoice)
+
 	return e
 }
