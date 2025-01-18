@@ -20,7 +20,7 @@ func NewUserService(userRepository repository.UserRepository) *UserService {
 	}
 }
 
-func (us *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUserSupporterRequest) (*pb.CreateUserSupporterResponse, error) {
 	payload := entity.CreateUserRequest{
 		Username: req.Username,
 		Email:    req.Email,
@@ -32,7 +32,7 @@ func (us *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest
 		Photo:    req.Photo,
 	}
 
-	if err := us.validateCreateUserRequest(req); err != nil {
+	if err := us.validateCreateUserRequest(payload); err != nil {
 		return nil, err
 	}
 
@@ -42,12 +42,54 @@ func (us *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest
 		return nil, err
 	}
 
-	return &pb.CreateUserResponse{
+	return &pb.CreateUserSupporterResponse{
 		Id: result.ID.Hex(),
 	}, nil
 }
 
-func (us *UserService) validateCreateUserRequest(req *pb.CreateUserRequest) error {
+func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.CreateUserCoordinatorRequest) (*pb.CreateUserCoordinatorResponse, error) {
+	reqUser := entity.CreateUserRequest{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: req.Password,
+		Role:     req.Role,
+		FullName: req.FullName,
+		Address:  req.Address,
+		Phone:    req.Phone,
+		Photo:    req.Photo,
+	}
+
+	// bankName, err := us.getBankName(req.BankCode)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	reqBank := entity.CreateMerchantRequest{
+		AccountHolderName: req.AccountHolderName,
+		BankCode:          req.BankCode,
+		BankAccountNumber: req.BankAccountNumber,
+	}
+
+	if err := us.validateCreateUserRequest(reqUser); err != nil {
+		return nil, err
+	}
+
+	if err := us.validateBankRequest(reqBank); err != nil {
+		return nil, err
+	}
+
+	result, err := us.userRepository.CreateMerchant(reqUser, reqBank)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CreateUserCoordinatorResponse{
+		Id: result.ID.Hex(),
+	}, nil
+}
+
+func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")
 	}
@@ -98,3 +140,34 @@ func (us *UserService) validateCreateUserRequest(req *pb.CreateUserRequest) erro
 
 	return nil
 }
+
+func (us *UserService) validateBankRequest(req entity.CreateMerchantRequest) error {
+	if req.AccountHolderName == "" {
+		return fmt.Errorf("account holder name is required")
+	}
+
+	if req.BankCode == "" {
+		return fmt.Errorf("bank code is required")
+	}
+
+	if req.BankAccountNumber == "" {
+		return fmt.Errorf("bank account number is required")
+	}
+
+	return nil
+}
+
+// func (us *UserService) getBankName(bankCode string) (string, error) {
+// 	bankList, err := helper.GetBankList()
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	for _, bank := range *bankList {
+// 		if bank.Code == strings.ToUpper(bankCode) {
+// 			return bank.Name, nil
+// 		}
+// 	}
+
+// 	return "", fmt.Errorf("bank code is invalid")
+// }

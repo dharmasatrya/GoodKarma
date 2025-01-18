@@ -11,7 +11,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(request entity.CreateUserRequest) (*entity.User, error)
+	CreateUser(entity.CreateUserRequest) (*entity.User, error)
+	CreateMerchant(entity.CreateUserRequest, entity.CreateMerchantRequest) (*entity.User, error)
 }
 
 type userRepository struct {
@@ -24,6 +25,10 @@ func (ur *userRepository) GetUserCollection() *mongo.Collection {
 
 func (ur *userRepository) GetProfileCollection() *mongo.Collection {
 	return ur.db.Collection("profiles")
+}
+
+func (ur *userRepository) GetWalletCollection() *mongo.Collection {
+	return ur.db.Collection("wallets")
 }
 
 func NewUserRepository(DB *mongo.Database) UserRepository {
@@ -76,6 +81,32 @@ func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.
 	}
 
 	return &newUser, nil
+}
+
+func (ur *userRepository) CreateMerchant(request entity.CreateUserRequest, requestMerchant entity.CreateMerchantRequest) (*entity.User, error) {
+	walletCollection := ur.GetWalletCollection()
+
+	user, err := ur.CreateUser(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	wallet := entity.Wallet{
+		ID:                primitive.NewObjectID(),
+		UserID:            user.ID,
+		AccountHolderName: requestMerchant.AccountHolderName,
+		BankCode:          requestMerchant.BankCode,
+		BankAccountNumber: requestMerchant.BankAccountNumber,
+	}
+
+	_, err = walletCollection.InsertOne(context.Background(), wallet)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (ur *userRepository) validateCreateUser(request entity.CreateUserRequest) error {

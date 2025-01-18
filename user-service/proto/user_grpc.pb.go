@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_CreateUser_FullMethodName     = "/user.UserService/CreateUser"
-	UserService_CreateMerchant_FullMethodName = "/user.UserService/CreateMerchant"
+	UserService_CreateUserSupporter_FullMethodName   = "/user.UserService/CreateUserSupporter"
+	UserService_CreateUserCoordinator_FullMethodName = "/user.UserService/CreateUserCoordinator"
 )
 
 // UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
-	CreateMerchant(ctx context.Context, in *CreateMerchantRequest, opts ...grpc.CallOption) (*CreateMerchantResponse, error)
+	CreateUserSupporter(ctx context.Context, in *CreateUserSupporterRequest, opts ...grpc.CallOption) (*CreateUserSupporterResponse, error)
+	CreateUserCoordinator(ctx context.Context, in *CreateUserCoordinatorRequest, opts ...grpc.CallOption) (*CreateUserCoordinatorResponse, error)
 }
 
 type userServiceClient struct {
@@ -39,20 +39,20 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+func (c *userServiceClient) CreateUserSupporter(ctx context.Context, in *CreateUserSupporterRequest, opts ...grpc.CallOption) (*CreateUserSupporterResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateUserResponse)
-	err := c.cc.Invoke(ctx, UserService_CreateUser_FullMethodName, in, out, cOpts...)
+	out := new(CreateUserSupporterResponse)
+	err := c.cc.Invoke(ctx, UserService_CreateUserSupporter_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) CreateMerchant(ctx context.Context, in *CreateMerchantRequest, opts ...grpc.CallOption) (*CreateMerchantResponse, error) {
+func (c *userServiceClient) CreateUserCoordinator(ctx context.Context, in *CreateUserCoordinatorRequest, opts ...grpc.CallOption) (*CreateUserCoordinatorResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateMerchantResponse)
-	err := c.cc.Invoke(ctx, UserService_CreateMerchant_FullMethodName, in, out, cOpts...)
+	out := new(CreateUserCoordinatorResponse)
+	err := c.cc.Invoke(ctx, UserService_CreateUserCoordinator_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func (c *userServiceClient) CreateMerchant(ctx context.Context, in *CreateMercha
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
 type UserServiceServer interface {
-	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
-	CreateMerchant(context.Context, *CreateMerchantRequest) (*CreateMerchantResponse, error)
+	CreateUserSupporter(context.Context, *CreateUserSupporterRequest) (*CreateUserSupporterResponse, error)
+	CreateUserCoordinator(context.Context, *CreateUserCoordinatorRequest) (*CreateUserCoordinatorResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -75,11 +75,11 @@ type UserServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUserServiceServer struct{}
 
-func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+func (UnimplementedUserServiceServer) CreateUserSupporter(context.Context, *CreateUserSupporterRequest) (*CreateUserSupporterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserSupporter not implemented")
 }
-func (UnimplementedUserServiceServer) CreateMerchant(context.Context, *CreateMerchantRequest) (*CreateMerchantResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateMerchant not implemented")
+func (UnimplementedUserServiceServer) CreateUserCoordinator(context.Context, *CreateUserCoordinatorRequest) (*CreateUserCoordinatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserCoordinator not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -102,38 +102,38 @@ func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 	s.RegisterService(&UserService_ServiceDesc, srv)
 }
 
-func _UserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateUserRequest)
+func _UserService_CreateUserSupporter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserSupporterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).CreateUser(ctx, in)
+		return srv.(UserServiceServer).CreateUserSupporter(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_CreateUser_FullMethodName,
+		FullMethod: UserService_CreateUserSupporter_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).CreateUser(ctx, req.(*CreateUserRequest))
+		return srv.(UserServiceServer).CreateUserSupporter(ctx, req.(*CreateUserSupporterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_CreateMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateMerchantRequest)
+func _UserService_CreateUserCoordinator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserCoordinatorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).CreateMerchant(ctx, in)
+		return srv.(UserServiceServer).CreateUserCoordinator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_CreateMerchant_FullMethodName,
+		FullMethod: UserService_CreateUserCoordinator_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).CreateMerchant(ctx, req.(*CreateMerchantRequest))
+		return srv.(UserServiceServer).CreateUserCoordinator(ctx, req.(*CreateUserCoordinatorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,12 +146,12 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateUser",
-			Handler:    _UserService_CreateUser_Handler,
+			MethodName: "CreateUserSupporter",
+			Handler:    _UserService_CreateUserSupporter_Handler,
 		},
 		{
-			MethodName: "CreateMerchant",
-			Handler:    _UserService_CreateMerchant_Handler,
+			MethodName: "CreateUserCoordinator",
+			Handler:    _UserService_CreateUserCoordinator_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
