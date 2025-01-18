@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	pb "goodkarma-notification-service/pb"
+	pb "goodkarma-notification-service/proto"
 	"time"
 
 	"goodkarma-notification-service/utils"

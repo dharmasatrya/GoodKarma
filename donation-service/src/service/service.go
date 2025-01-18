@@ -3,10 +3,11 @@ package service
 
 import (
 	"context"
-	"goodkarma-donation-service/entity"
-	"goodkarma-donation-service/src/repository"
 
-	pb "goodkarma-donation-service/proto"
+	"github.com/dharmasatrya/goodkarma/donation-service/entity"
+	"github.com/dharmasatrya/goodkarma/donation-service/src/repository"
+
+	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -62,11 +63,11 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 	}
 
 	return &pb.CreateDonationResponse{
-		Id:             res.ID.Hex(),
-		UserId:         res.UserID,
-		EventId:        res.EventID,
-		Amount:         res.Amount,
-		Status:         res.Status,
-		DonationTypeId: res.DonationType,
+		Id:           res.ID.Hex(),
+		UserId:       res.UserID,
+		EventId:      res.EventID,
+		Amount:       res.Amount,
+		Status:       res.Status,
+		DonationType: res.DonationType,
 	}, nil
 }

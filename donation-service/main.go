@@ -1,17 +1,17 @@
 package main
 
-
 import (
 	"context"
-	"goodkarma-donation-service/middleware"
 	"log"
 	"net"
 
-	"goodkarma-donation-service/config"
-	"goodkarma-donation-service/src/repository"
-	"goodkarma-donation-service/src/service"
+	"github.com/dharmasatrya/goodkarma/donation-service/middleware"
 
-	pb "goodkarma-donation-service/proto"
+	"github.com/dharmasatrya/goodkarma/donation-service/config"
+	"github.com/dharmasatrya/goodkarma/donation-service/src/repository"
+	"github.com/dharmasatrya/goodkarma/donation-service/src/service"
+
+	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 
 	"google.golang.org/grpc"
 )

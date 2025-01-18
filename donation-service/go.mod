@@ -1,4 +1,4 @@
-module goodkarma-donation-service
+module github.com/dharmasatrya/goodkarma/donation-service
 
 go 1.23.2
 
