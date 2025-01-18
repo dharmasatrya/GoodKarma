@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package donation;
 
-option go_package = "goodkarma-donation-service/proto";
+option go_package = "github.com/dharmasatrya/goodkarma/donation-service/proto";
 
 service DonationService {
     rpc CreateDonation (CreateDonationRequest) returns (CreateDonationResponse);
@@ -35,7 +35,7 @@ message CreateDonationResponse {
     string event_id = 3;
     string amount = 4;
     string status = 5;
-    string donation_type_id = 6;
+    string donation_type = 6;
 }
 
 message UpdateDonationStatusRequest {
@@ -49,7 +49,7 @@ message UpdateDonationStatusResponse {
     string event_id = 3;
     string amount = 4;
     string status = 5;
-    string donation_type_id = 6;
+    string donation_type = 6;
 }
 
 message GetDonationsByUserIdRequest {
