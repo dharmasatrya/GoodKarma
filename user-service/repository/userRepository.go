@@ -15,6 +15,7 @@ type UserRepository interface {
 	CreateUser(entity.CreateUserRequest) (*entity.User, error)
 	CreateMerchant(entity.CreateUserRequest, entity.CreateMerchantRequest) (*entity.User, error)
 	Login(entity.LoginRequest) (*entity.User, error)
+	GetUserById(string) (*entity.DetailUser, error)
 }
 
 type userRepository struct {
@@ -133,6 +134,43 @@ func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, erro
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return nil, err
 	}
+
+	return &user, nil
+}
+
+func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
+	userCollection := ur.GetUserCollection()
+	profileCollection := ur.GetProfileCollection()
+
+	var user entity.DetailUser
+
+	userID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = userCollection.FindOne(context.Background(), primitive.M{"_id": userID}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, err
+	}
+
+	var profile entity.Profile
+
+	err = profileCollection.FindOne(context.Background(), primitive.M{"user_id": userID}).Decode(&profile)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user.FullName = profile.FullName
+	user.Address = profile.Address
+	user.Phone = profile.Phone
+	user.Photo = profile.Photo
 
 	return &user, nil
 }

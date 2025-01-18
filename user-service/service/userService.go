@@ -106,6 +106,25 @@ func (us *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Log
 	}, nil
 }
 
+func (us *UserService) GetUserById(ctx context.Context, req *pb.GetUserByIdRequest) (*pb.GetUserByIdResponse, error) {
+	result, err := us.userRepository.GetUserById(req.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetUserByIdResponse{
+		Id:       result.ID.Hex(),
+		Username: result.Username,
+		Email:    result.Email,
+		Role:     result.Role,
+		FullName: result.FullName,
+		Address:  result.Address,
+		Phone:    result.Phone,
+		Photo:    result.Photo,
+	}, nil
+}
+
 func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")
