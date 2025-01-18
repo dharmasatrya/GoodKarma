@@ -35,8 +35,8 @@ func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %v", err)
 	}
 
-	collection := client.Database("goodkarma").Collection("payment")
+	walletCollection := client.Database("goodkarma").Collection("wallet")
 	fmt.Println("Successfully connected to MongoDB")
 
-	return collection, nil
+	return walletCollection, nil
 }
