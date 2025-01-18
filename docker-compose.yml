@@ -25,8 +25,8 @@ services:
     container_name: user-service
     restart: always
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=goodkarma
+      - MONGO_URI=mongodb+srv://kt2602:BhfqVlWg7Z0eYxh9@kt2602.3bntnvj.mongodb.net/
+      - MONGO_DATABASE=good-karma
       - MONGODB_COLLECTION=users
     ports:
       - "50051:50051"
