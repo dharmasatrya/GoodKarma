@@ -1,0 +1,142 @@
+version: '3.8'
+
+networks:
+  shared-network:
+    driver: bridge
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-goodkarma
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=goodkarma
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - shared-network
+
+  user-service:
+    build: 
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    container_name: user-service
+    restart: always
+    environment:
+      - MONGO_URI=mongodb+srv://kt2602:BhfqVlWg7Z0eYxh9@kt2602.3bntnvj.mongodb.net/
+      - MONGO_DATABASE=good-karma
+      - MONGODB_COLLECTION=users
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - mongodb
+
+  donation-service:
+    build: 
+      context: .
+      dockerfile: ./donation-service/Dockerfile
+    container_name: donation-service
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=goodkarma
+      - MONGODB_COLLECTION=donations
+    ports:
+      - "50052:50052"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - mongodb
+
+  payment-service:
+    build: 
+      context: .
+      dockerfile: ./payment-service/Dockerfile
+    container_name: payment-service
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=goodkarma
+      - MONGODB_COLLECTION=payments
+    ports:
+      - "50053:50053"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - mongodb
+
+  notification-service:
+    build: 
+      context: .
+      dockerfile: ./notification-service/Dockerfile
+    container_name: notification-service
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=goodkarma
+      - MONGODB_COLLECTION=notifications
+    ports:
+      - "50054:50054"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - mongodb
+
+  event-service:
+    build: 
+      context: .
+      dockerfile: ./event-service/Dockerfile
+    container_name: event-service
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=goodkarma
+      - MONGODB_COLLECTION=events
+    ports:
+      - "50055:50055"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - mongodb
+
+  gateway-service:
+    build: 
+      context: .
+      dockerfile: ./gateway-service/Dockerfile
+    container_name: gateway-service
+    restart: always
+    environment:
+      - USER_SERVICE_URL=user-service:50051
+      - DONATION_SERVICE_URL=donation-service:50052
+      - PAYMENT_SERVICE_URL=payment-service:50053
+      - NOTIFICATION_SERVICE_URL=notification-service:50054
+      - EVENT_SERVICE_URL=event-service:50055
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./proto-repo:/app/proto-repo
+    networks:
+      - shared-network
+    depends_on:
+      - user-service
+      - donation-service
+      - payment-service
+      - notification-service
+      - event-service
+
+volumes:
+  mongodb_data:
