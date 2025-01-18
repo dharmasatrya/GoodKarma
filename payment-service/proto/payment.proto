@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package payment;
 
-option go_package = "goodkarma-payment-service/proto";
+option go_package = "github.com/dharmasatrya/goodkarma/payment-service/proto";
 
 service PaymentService {
     rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse);
@@ -43,7 +43,7 @@ message UpdateWalleetBalanceResponse {
 }
 
 message WithdrawRequest {
-    string id = 1;
+    uint32 amount = 1;
 }
 
 message WithdrawResponse {

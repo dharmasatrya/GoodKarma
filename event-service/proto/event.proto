@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package eventpb; // Ensure this matches the generated Go package name
+
+option go_package = "./proto"; // Updated to match the generated Go package
+
+service EventService {
+    rpc CreateEvent (EventRequest) returns (EventResponse);
+    rpc UpdateDescription (UpdateDescriptionRequest) returns (UpdateDescriptionResponse);
+    rpc GetAllEvent (Empty) returns(EventListResponse);
+    rpc GetEventById (Id) returns(EventResponse);
+    rpc GetEventByUserId (UserId) returns(EventListResponse);
+    rpc GetEventByCategory (Category) returns(EventListResponse);
+}
+
+message EventRequest{
+    string user_id = 1;
+    string name = 2;
+    string description = 3;
+    string date_start = 4;
+    string date_end = 5;
+    string donation_type = 6;
+}
+
+message EventResponse {
+    string id = 1;
+    string user_id = 2;
+    string name = 3;
+    string description = 4;
+    string date_start = 5;
+    string date_end = 6;
+    string donation_type = 7;
+}
+
+message EventListResponse {
+    repeated EventResponse events = 1;
+}
+
+message UpdateDescriptionRequest {
+    string id = 1;
+    string description = 2;
+}
+
+message UpdateDescriptionResponse {
+    string id = 1;
+    string user_id = 2;
+    string name = 3;
+    string description = 4;
+    string date_start = 5;
+    string date_end = 6;
+    string donation_type = 7;
+}
+
+message Empty{
+}
+
+message Id{
+    string id = 1;
+}
+
+message UserId{
+    string user_id = 1;
+}
+
+message Category{
+    string category = 1;
+}
