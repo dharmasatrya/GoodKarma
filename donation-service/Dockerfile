@@ -1,21 +1,22 @@
-FROM golang:1.23.2
+# Build stage
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Copy proto repo first
-COPY proto-repo /app/proto-repo
+# Copy the entire monorepo for proto access
+COPY . .
 
-# Copy users service files
-COPY goodkarma-donation-service /app/donation-service
-
+# Build the service
 WORKDIR /app/donation-service
-
-# Download dependencies
-RUN go mod download
-
-# Build
 RUN go build -o main .
 
-EXPOSE 50054
+# Final stage
+FROM alpine:latest
 
+WORKDIR /app
+
+# Copy the binary from builder
+COPY --from=builder /app/donation-service/main .
+
+EXPOSE 50052
 CMD ["./main"]
