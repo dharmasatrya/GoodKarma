@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"goodkarma-donation-service/entity"
 	"time"
+
+	"github.com/dharmasatrya/goodkarma/donation-service/entity"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )

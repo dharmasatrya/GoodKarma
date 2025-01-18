@@ -3,11 +3,12 @@ package service
 
 import (
 	"context"
-	"goodkarma-payment-service/entity"
-	"goodkarma-payment-service/external"
-	"goodkarma-payment-service/src/repository"
 
-	pb "goodkarma-payment-service/proto"
+	"github.com/dharmasatrya/goodkarma/payment-service/entity"
+	"github.com/dharmasatrya/goodkarma/payment-service/external"
+	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
+
+	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"

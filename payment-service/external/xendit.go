@@ -5,9 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"goodkarma-payment-service/entity"
 	"net/http"
 	"os"
+
+	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 )
 
 func CreateXenditInvoice(req entity.XenditInvoiceRequest) (interface{}, error) {
