@@ -56,7 +56,7 @@ message WithdrawResponse {
 }
 
 message CreateInvoiceRequest {
-    uint32 user_id = 1;
+    string user_id = 1;
     string external_id = 2;
     uint32 amount = 3;
     string description = 4;

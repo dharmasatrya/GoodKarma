@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.2
-// source: proto/donation.proto
+// source: donation.proto
 
 package proto
 
@@ -231,5 +231,5 @@ var DonationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/donation.proto",
+	Metadata: "donation.proto",
 }

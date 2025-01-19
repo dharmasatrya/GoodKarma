@@ -88,7 +88,7 @@ func (s *PaymentService) UpdateWalletBalance(ctx context.Context, req *pb.Update
 
 	res, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating wallet")
+		return nil, status.Errorf(codes.Internal, "error updating balance")
 	}
 
 	return &pb.UpdateWalleetBalanceResponse{
@@ -114,16 +114,16 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 		Description: req.Description,
 		FirstName:   "a",
 		LastName:    "a",
-		Email:       "a",
-		Phone:       "",
+		Email:       "dharmasatrya10@gmail.com",
+		Phone:       "081299640904",
 	}
 
-	_, err := external.CreateXenditInvoice(invoice)
+	res, err := external.CreateXenditInvoice(invoice)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error creating wallet")
 	}
 
 	return &pb.CreateInvoiceResponse{
-		InvoiceUrl: "url",
+		InvoiceUrl: res.InvoiceURL,
 	}, nil
 }
