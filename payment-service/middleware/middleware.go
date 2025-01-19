@@ -75,7 +75,7 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		// Use the same secret as your auth service
-		return []byte("secret"), nil // Replace with your actual secret
+		return []byte("your-256-bit-secret"), nil // Replace with your actual secret
 	})
 
 	if err != nil {

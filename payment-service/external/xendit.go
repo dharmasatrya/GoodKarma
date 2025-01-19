@@ -11,7 +11,7 @@ import (
 	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 )
 
-func CreateXenditInvoice(req entity.XenditInvoiceRequest) (interface{}, error) {
+func CreateXenditInvoice(req entity.XenditInvoiceRequest) (*entity.XenditInvoiceResponse, error) {
 	// Prepare the request payload
 	xenditUrl := os.Getenv("XENDIT_INVOICE_URL")
 	payload := map[string]interface{}{
@@ -34,18 +34,21 @@ func CreateXenditInvoice(req entity.XenditInvoiceRequest) (interface{}, error) {
 	// Convert payload to JSON
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		fmt.Println("37")
 		return nil, fmt.Errorf("error marshaling JSON: %v", err)
 	}
 
 	// Create the request
 	request, err := http.NewRequest("POST", xenditUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Println("43")
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Get API key from environment variable and encode it
 	apiKey := os.Getenv("XENDIT_API_KEY")
 	if apiKey == "" {
+		fmt.Println("49")
 		return nil, fmt.Errorf("XENDIT_API_KEY not found in environment variables")
 	}
 	encodedKey := base64.StdEncoding.EncodeToString([]byte(apiKey))
@@ -63,17 +66,21 @@ func CreateXenditInvoice(req entity.XenditInvoiceRequest) (interface{}, error) {
 	defer resp.Body.Close()
 
 	// Parse the response
-	var result map[string]interface{}
+	var result entity.XenditInvoiceResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		fmt.Println("68")
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	// Check if response indicates an error
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		fmt.Println("74", result)
 		return nil, fmt.Errorf("API request failed with status %d: %v", resp.StatusCode, result)
 	}
 
-	return result, nil
+	fmt.Println(&result)
+
+	return &result, nil
 }
 
 func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) (map[string]interface{}, error) {
