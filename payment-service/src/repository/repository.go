@@ -52,13 +52,13 @@ func (r *paymentRepository) CreateWallet(input entity.Wallet) (*entity.Wallet, e
 }
 
 func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error) {
-
 	var wallet entity.Wallet
 
 	err := r.db.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("book not found")
+			fmt.Println("error 62", err)
+			return nil, fmt.Errorf("wallet not found")
 		}
 	}
 
@@ -73,15 +73,17 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	var updatedWallet entity.Wallet
 	err1 := r.db.FindOneAndUpdate(
 		ctx,
-		bson.M{"user_id": input.UserID},
+		bson.M{"id": wallet.ID},
+		bson.M{"$set": bson.M{"amount": wallet.Amount}}, // Added the update operation
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&updatedWallet)
 
 	if err1 != nil {
+		fmt.Println("error 82", err1)
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("book not found")
+			return nil, fmt.Errorf("wallet not found")
 		}
-		return nil, fmt.Errorf("failed to update book: %w", err)
+		return nil, fmt.Errorf("failed to update wallet: %w", err)
 	}
 
 	return &updatedWallet, nil

@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	listen, err := net.Listen("tcp", ":50054")
+	listen, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -38,7 +38,7 @@ func main() {
 	donationService := service.NewDonationService(donationRepository)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
-	log.Println("Server is running on port 50054...")
+	log.Println("Server is running on port 50052...")
 	if err := grpcServer.Serve(listen); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

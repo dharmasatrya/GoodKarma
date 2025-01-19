@@ -14,7 +14,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var protectedMethods = map[string]bool{
+	"/payment.PaymentService/CreateWallet":        false,
+	"/payment.PaymentService/UpdateWalletBalance": true,
+	"/payment.PaymentService/Withdraw":            true,
+	"/payment.PaymentService/CreateInvoice":       true,
+}
+
 func UnaryAuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// Check if the method requires authentication
+	if requiresAuth := protectedMethods[info.FullMethod]; !requiresAuth {
+		// Method doesn't require auth, proceed without checking
+		return handler(ctx, req)
+	}
+
+	// Method requires auth, proceed with authentication
 	ctx, err := AuthInterceptor(ctx)
 	if err != nil {
 		return nil, err
@@ -61,7 +75,7 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		// Use the same secret as your auth service
-		return []byte("secret"), nil // Replace with your actual secret
+		return []byte("your-256-bit-secret"), nil // Replace with your actual secret
 	})
 
 	if err != nil {
