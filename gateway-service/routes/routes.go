@@ -18,9 +18,18 @@ func NewRouter() *echo.Echo {
 		e.Logger.Fatalf("did not connect: %v", err)
 	}
 
+	eventClient, err := config.InitEventServiceClient()
+	if err != nil {
+		e.Logger.Fatalf("did not connect: %v", err)
+	}
+
 	// userClient := pb.NewUserServiceClient(userConnection)
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
+
+	// userClient := pb.NewUserServiceClient(userConnection)
+	eventService := service.NewEventService(eventClient)
+	eventController := controller.NewEventController(eventService)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -33,15 +42,15 @@ func NewRouter() *echo.Echo {
 		user.POST("/login", userController.Login)
 	}
 
-	// event := e.Group("/events")
+	event := e.Group("/events")
 	// event.Use(middlewares.RequireAuth)
 	// {
-	// 	event.POST("", eventController.CreateEvent)
-	// 	event.PUT("/:id", eventController.EditEvent)
-	// 	event.GET("", eventController.GetAllEvent)
-	// 	event.GET("/:id", eventController.GetEventById)
-	// 	event.GET("/", eventController.GetAllEventByUserLogin)
-	// 	event.GET("/:category", eventController.GetAllEventByCategory)
+	event.POST("", eventController.CreateEvent)
+	event.PUT("/:id", eventController.EditEvent)
+	event.GET("", eventController.GetAllEvents)
+	event.GET("/:id", eventController.GetEventById)
+	event.GET("/user", eventController.GetAllEventByUserLogin)
+	event.GET("/category/", eventController.GetAllEventByCategory)
 	// }
 
 	// donation := e.Group("/donations")

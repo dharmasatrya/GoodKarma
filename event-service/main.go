@@ -1,7 +1,7 @@
 package main
 
 import (
-	"goodkarma-event-service/config"
+	"github.com/dharmasatrya/goodkarma/event-service/config"
 
 	_ "github.com/joho/godotenv/autoload"
 )
