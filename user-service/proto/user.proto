@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package user;
+option go_package = "./proto";
+
+service UserService {
+    rpc CreateUserSupporter (CreateUserSupporterRequest) returns (CreateUserSupporterResponse);
+    rpc CreateUserCoordinator (CreateUserCoordinatorRequest) returns (CreateUserCoordinatorResponse);
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+}
+
+message CreateUserSupporterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+    string role = 4;
+    string full_name = 5;
+    string address = 6;
+    string phone = 7;
+    string photo = 8;
+}
+
+message CreateUserSupporterResponse {
+    string id = 1;
+}
+
+message CreateUserCoordinatorRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+    string role = 4;
+    string full_name = 5;
+    string address = 6;
+    string phone = 7;
+    string photo = 8;
+    string bank_code = 9;
+    string bank_account_number = 10;
+    string account_holder_name = 11;
+}
+
+message CreateUserCoordinatorResponse {
+    string id = 1;
+}
+
+message LoginRequest {
+    string username_or_email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string id = 1;
+}
+
+message GetUserByIdRequest {
+    string id = 1;
+}
+
+message GetUserByIdResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string role = 4;
+    string full_name = 5;
+    string address = 6;
+    string phone = 7;
+    string photo = 8;
+}
+
+message Empty {}
