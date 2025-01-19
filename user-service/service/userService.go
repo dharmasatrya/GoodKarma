@@ -3,10 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"goodkarma-user-service/entity"
-	pb "goodkarma-user-service/proto"
-	"goodkarma-user-service/repository"
+	"log"
 	"strings"
+	"time"
+
+	"github.com/dharmasatrya/goodkarma/user-service/entity"
+	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
+	"github.com/dharmasatrya/goodkarma/user-service/repository"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserService struct {
@@ -101,8 +105,15 @@ func (us *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Log
 		return nil, err
 	}
 
+	tokenString, err := us.generateJWTToken(result)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.LoginResponse{
-		Id: result.ID.Hex(),
+		Id:    result.ID.Hex(),
+		Token: tokenString,
 	}, nil
 }
 
@@ -191,6 +202,22 @@ func (us *UserService) validateBankRequest(req entity.CreateMerchantRequest) err
 	}
 
 	return nil
+}
+
+func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID.Hex(),
+		"exp":     time.Now().Add(time.Hour * 1).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte("hacktiv8p3gc2"))
+
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 // func (us *UserService) getBankName(bankCode string) (string, error) {

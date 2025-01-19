@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
-	"goodkarma-user-service/entity"
 	"strings"
+
+	"github.com/dharmasatrya/goodkarma/user-service/entity"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"goodkarma-user-service/config"
-	pb "goodkarma-user-service/proto"
-	"goodkarma-user-service/repository"
-	"goodkarma-user-service/service"
 	"log"
 	"net"
+
+	"github.com/dharmasatrya/goodkarma/user-service/config"
+	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
+	"github.com/dharmasatrya/goodkarma/user-service/repository"
+	"github.com/dharmasatrya/goodkarma/user-service/service"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
