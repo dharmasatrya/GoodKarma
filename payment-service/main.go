@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/dharmasatrya/goodkarma/payment-service/middleware"
+	"github.com/joho/godotenv"
 
 	"github.com/dharmasatrya/goodkarma/payment-service/config"
 	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
@@ -20,6 +21,11 @@ func main() {
 	listen, err := net.Listen("tcp", ":50053")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	err1 := godotenv.Load()
+	if err1 != nil {
+		log.Fatal("Error loading .env file")
 	}
 
 	grpcServer := grpc.NewServer(
