@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
-	"goodkarma-user-service/entity"
 	"strings"
+
+	"github.com/dharmasatrya/goodkarma/user-service/entity"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -128,9 +129,7 @@ func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, erro
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(user)
-
+  
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return nil, err
 	}

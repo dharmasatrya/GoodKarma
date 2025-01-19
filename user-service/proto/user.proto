@@ -8,6 +8,7 @@ service UserService {
     rpc CreateUserCoordinator (CreateUserCoordinatorRequest) returns (CreateUserCoordinatorResponse);
     rpc Login (LoginRequest) returns (LoginResponse);
     rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+    rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse);
 }
 
 message CreateUserSupporterRequest {
@@ -50,6 +51,7 @@ message LoginRequest {
 
 message LoginResponse {
     string id = 1;
+    string token = 2;
 }
 
 message GetUserByIdRequest {
@@ -65,6 +67,19 @@ message GetUserByIdResponse {
     string address = 6;
     string phone = 7;
     string photo = 8;
+}
+
+message UpdateProfileRequest {
+    string id = 1;
+    string email = 2;
+    string full_name = 3;
+    string address = 4;
+    string phone = 5;
+    string photo = 6;
+}
+
+message UpdateProfileResponse {
+    string id = 1;
 }
 
 message Empty {}

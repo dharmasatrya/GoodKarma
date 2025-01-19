@@ -4,7 +4,9 @@ go 1.23.2
 
 require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/user-service v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/swaggo/echo-swagger v1.4.1
@@ -22,6 +24,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -31,6 +34,7 @@ require (
 	github.com/swaggo/swag v1.8.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	go.mongodb.org/mongo-driver v1.17.2 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
@@ -43,3 +47,7 @@ require (
 replace github.com/dharmasatrya/goodkarma/donation-service => ../donation-service
 
 replace github.com/dharmasatrya/goodkarma/payment-service => ../payment-service
+
+replace github.com/dharmasatrya/goodkarma/event-service => ../event-service
+
+replace github.com/dharmasatrya/goodkarma/user-service => ../user-service

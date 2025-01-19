@@ -19,6 +19,17 @@ type Profile struct {
 	Photo    string             `json:"photo" bson:"photo"`
 }
 
+type DetailUser struct {
+	ID       primitive.ObjectID `json:"id" bson:"_id"`
+	Username string             `json:"username" bson:"username"`
+	Email    string             `json:"email" bson:"email"`
+	Role     string             `json:"role" bson:"role"`
+	FullName string             `json:"full_name" bson:"full_name"`
+	Address  string             `json:"address" bson:"address"`
+	Phone    string             `json:"phone" bson:"phone"`
+	Photo    string             `json:"photo" bson:"photo"`
+}
+
 type Wallet struct {
 	ID                primitive.ObjectID `json:"id" bson:"_id"`
 	UserID            primitive.ObjectID `json:"user_id" bson:"user_id"`
