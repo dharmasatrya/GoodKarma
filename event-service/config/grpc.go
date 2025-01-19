@@ -2,10 +2,16 @@ package config
 
 import (
 	"context"
+<<<<<<<< HEAD:event-service/config/grpc.go
 	"goodkarma-event-service/middlewares"
 	pb "goodkarma-event-service/proto"
 	"goodkarma-event-service/src/repository"
 	"goodkarma-event-service/src/service"
+========
+	"goodkarma-notification-service/middlewares"
+	pb "goodkarma-notification-service/proto"
+	"goodkarma-notification-service/src/service"
+>>>>>>>> 6d7a7a5acaf20b0862bcffd64f136c7266be2e9c:notification-service/config/grpc.go
 	"log"
 	"net"
 	"os"
