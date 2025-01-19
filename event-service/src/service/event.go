@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"goodkarma-event-service/entity"
-	"goodkarma-event-service/helpers"
-	pb "goodkarma-event-service/proto"
-	"goodkarma-event-service/src/repository"
 	"strconv"
+
+	"github.com/dharmasatrya/goodkarma/event-service/entity"
+	"github.com/dharmasatrya/goodkarma/event-service/helpers"
+	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
+	"github.com/dharmasatrya/goodkarma/event-service/src/repository"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -30,11 +31,12 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 	}
 
 	event := entity.Event{
-		UserID:      req.UserId,
-		Name:        req.Name,
-		Description: req.Description,
-		DateStart:   helpers.ParseDate(req.DateStart),
-		DateEnd:     helpers.ParseDate(req.DateEnd),
+		UserID:       req.UserId,
+		Name:         req.Name,
+		Description:  req.Description,
+		DateStart:    helpers.ParseDate(req.DateStart),
+		DateEnd:      helpers.ParseDate(req.DateEnd),
+		DonationType: req.DonationType,
 	}
 
 	res, err := s.eventRepository.CreateEvent(event)
@@ -45,12 +47,13 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 	id := strconv.Itoa(res.ID)
 
 	return &pb.EventResponse{
-		Id:          id,
-		UserId:      req.UserId,
-		Name:        req.Name,
-		Description: req.Description,
-		DateStart:   req.DateStart,
-		DateEnd:     req.DateEnd,
+		Id:           id,
+		UserId:       req.UserId,
+		Name:         req.Name,
+		Description:  req.Description,
+		DateStart:    req.DateStart,
+		DateEnd:      req.DateEnd,
+		DonationType: req.DonationType,
 	}, nil
 }
 
@@ -73,12 +76,13 @@ func (s *EventService) UpdateDescription(ctx context.Context, req *pb.UpdateDesc
 	idString := strconv.Itoa(res.ID)
 
 	return &pb.UpdateDescriptionResponse{
-		Id:          idString,
-		UserId:      res.UserID,
-		Name:        res.Name,
-		Description: res.Description,
-		DateStart:   res.DateStart.Format("2006-01-02T15:04:05"), // Format time.Time as string
-		DateEnd:     res.DateEnd.Format("2006-01-02T15:04:05"),   // Format time.Time as string
+		Id:           idString,
+		UserId:       res.UserID,
+		Name:         res.Name,
+		Description:  res.Description,
+		DateStart:    res.DateStart.Format("2006-01-02T15:04:05"), // Format time.Time as string
+		DateEnd:      res.DateEnd.Format("2006-01-02T15:04:05"),   // Format time.Time as string
+		DonationType: res.DonationType,
 	}, nil
 }
 
@@ -92,12 +96,13 @@ func (s *EventService) GetAllEvent(ctx context.Context, req *pb.Empty) (*pb.Even
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:          strconv.Itoa(event.ID),
-			UserId:      event.UserID,
-			Name:        event.Name,
-			Description: event.Description,
-			DateStart:   event.DateStart.Format("2006-01-02T15:04:05"),
-			DateEnd:     event.DateEnd.Format("2006-01-02T15:04:05"),
+			Id:           strconv.Itoa(event.ID),
+			UserId:       event.UserID,
+			Name:         event.Name,
+			Description:  event.Description,
+			DateStart:    event.DateStart.Format("2006-01-02T15:04:05"),
+			DateEnd:      event.DateEnd.Format("2006-01-02T15:04:05"),
+			DonationType: event.DonationType,
 		})
 	}
 
@@ -119,19 +124,18 @@ func (s *EventService) GetEventById(ctx context.Context, req *pb.Id) (*pb.EventR
 	}
 
 	return &pb.EventResponse{
-		Id:          strconv.Itoa(event.ID),
-		UserId:      event.UserID,
-		Name:        event.Name,
-		Description: event.Description,
-		DateStart:   event.DateStart.Format("2006-01-02T15:04:05"),
-		DateEnd:     event.DateEnd.Format("2006-01-02T15:04:05"),
+		Id:           strconv.Itoa(event.ID),
+		UserId:       event.UserID,
+		Name:         event.Name,
+		Description:  event.Description,
+		DateStart:    event.DateStart.Format("2006-01-02T15:04:05"),
+		DateEnd:      event.DateEnd.Format("2006-01-02T15:04:05"),
+		DonationType: event.DonationType,
 	}, nil
 }
 
 func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.UserId) (*pb.EventListResponse, error) {
-	userId, err := strconv.Atoi(req.UserId)
-
-	events, err := s.eventRepository.GetEventsByUserId(userId)
+	events, err := s.eventRepository.GetEventsByUserId(req.UserId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error retrieving events: %v", err)
 	}
@@ -139,12 +143,13 @@ func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.UserId) (*p
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:          strconv.Itoa(event.ID),
-			UserId:      event.UserID,
-			Name:        event.Name,
-			Description: event.Description,
-			DateStart:   event.DateStart.Format("2006-01-02T15:04:05"),
-			DateEnd:     event.DateEnd.Format("2006-01-02T15:04:05"),
+			Id:           strconv.Itoa(event.ID),
+			UserId:       event.UserID,
+			Name:         event.Name,
+			Description:  event.Description,
+			DateStart:    event.DateStart.Format("2006-01-02T15:04:05"),
+			DateEnd:      event.DateEnd.Format("2006-01-02T15:04:05"),
+			DonationType: event.DonationType,
 		})
 	}
 
@@ -162,12 +167,13 @@ func (s *EventService) GetEventByCategory(ctx context.Context, req *pb.Category)
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:          strconv.Itoa(event.ID),
-			UserId:      event.UserID,
-			Name:        event.Name,
-			Description: event.Description,
-			DateStart:   event.DateStart.Format("2006-01-02T15:04:05"),
-			DateEnd:     event.DateEnd.Format("2006-01-02T15:04:05"),
+			Id:           strconv.Itoa(event.ID),
+			UserId:       event.UserID,
+			Name:         event.Name,
+			Description:  event.Description,
+			DateStart:    event.DateStart.Format("2006-01-02T15:04:05"),
+			DateEnd:      event.DateEnd.Format("2006-01-02T15:04:05"),
+			DonationType: event.DonationType,
 		})
 	}
 

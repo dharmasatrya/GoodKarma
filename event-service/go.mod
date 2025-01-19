@@ -1,4 +1,4 @@
-module goodkarma-event-service
+module github.com/dharmasatrya/goodkarma/event-service
 
 go 1.22.6
 
