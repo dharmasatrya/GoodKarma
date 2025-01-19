@@ -1,20 +1,23 @@
 package config
 
 import (
-	"fmt"
-	"log"
 	"os"
 
-	pb "gateway-service/pb/user"
-
+	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-func InitUserServiceClient() (*grpc.ClientConn, pb.UserServiceClient) {
-	// Without TLS (use this if the server does not support TLS)
-	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_URI"), grpc.WithInsecure())
+func InitUserServiceClient() (pb.UserServiceClient, error) {
+	grpcUri := os.Getenv("USER_SERVICE_DEV_URI")
+
+	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Error connection grcp to user-service: %v", err))
+		return nil, err
 	}
-	return conn, pb.NewUserServiceClient(conn)
+
+	userClient := pb.NewUserServiceClient(userConnection)
+
+	return userClient, nil
 }

@@ -130,8 +130,6 @@ func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, erro
 		return nil, err
 	}
 
-	fmt.Println(user)
-
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return nil, err
 	}

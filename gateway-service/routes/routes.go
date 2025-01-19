@@ -11,14 +11,16 @@ import (
 )
 
 func NewRouter() *echo.Echo {
-	// Initialize gRPC client connection
-	userClientConn, userClient := config.InitUserServiceClient()
-	defer userClientConn.Close() // Close the connection when the application exits
+	e := echo.New()
 
+	userClient, err := config.InitUserServiceClient()
+	if err != nil {
+		e.Logger.Fatalf("did not connect: %v", err)
+	}
+
+	// userClient := pb.NewUserServiceClient(userConnection)
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
-
-	e := echo.New()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -26,15 +28,9 @@ func NewRouter() *echo.Echo {
 
 	user := e.Group("/users")
 	{
-		// register := users.Group("/register")
-		// {
-		// 	register.POST("/penyelenggara", userController.RegisterPenyelenggara)
-		// 	register.POST("/donatur", userController.RegisterDonatur)
-		// }
-
-		user.POST("/login", userController.LoginUser)
-		// user.PUT("", userController.EditProfile)
-		// user.DELETE("", userController.DeleteProfile)
+		user.POST("/register/supporters", userController.RegisterUserSupporter)
+		user.POST("/register/coordinators", userController.RegisterUserCoordinator)
+		user.POST("/login", userController.Login)
 	}
 
 	// event := e.Group("/events")
