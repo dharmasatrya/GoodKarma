@@ -3,9 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
+	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +18,7 @@ import (
 
 type UserRepository interface {
 	CreateUser(entity.CreateUserRequest) (*entity.User, error)
-	CreateMerchant(entity.CreateUserRequest, entity.CreateMerchantRequest) (*entity.User, error)
+	CreateMerchant(entity.CreateMerchantRequest) (*entity.User, error)
 	Login(entity.LoginRequest) (*entity.User, error)
 	GetUserById(string) (*entity.DetailUser, error)
 }
@@ -87,30 +91,48 @@ func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.
 	return &newUser, nil
 }
 
-func (ur *userRepository) CreateMerchant(request entity.CreateUserRequest, requestMerchant entity.CreateMerchantRequest) (*entity.User, error) {
-	walletCollection := ur.GetWalletCollection()
+func (ur *userRepository) CreateMerchant(request entity.CreateMerchantRequest) (*entity.User, error) {
+	var user *entity.CreateUserRequest
 
-	user, err := ur.CreateUser(request)
+	user = &entity.CreateUserRequest{
+		Username: request.Username,
+		Email:    request.Email,
+		Password: request.Password,
+		Role:     request.Role,
+		FullName: request.FullName,
+		Address:  request.Address,
+		Phone:    request.Phone,
+		Photo:    request.Photo,
+	}
+
+	res, err := ur.CreateUser(*user)
 
 	if err != nil {
 		return nil, err
 	}
 
-	wallet := entity.Wallet{
-		ID:                primitive.NewObjectID(),
-		UserID:            user.ID,
-		AccountHolderName: requestMerchant.AccountHolderName,
-		BankCode:          requestMerchant.BankCode,
-		BankAccountNumber: requestMerchant.BankAccountNumber,
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
+	grpcConn, err := grpc.NewClient(paymentServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
 	}
 
-	_, err = walletCollection.InsertOne(context.Background(), wallet)
+	defer grpcConn.Close()
+
+	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
+
+	_, err = paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
+		UserId:            res.ID.Hex(),
+		BankAccountName:   request.AccountHolderName,
+		BankCode:          request.BankCode,
+		BankAccountNumber: request.BankAccountNumber,
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return res, nil
 }
 
 func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, error) {
@@ -129,7 +151,7 @@ func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, erro
 	if err != nil {
 		return nil, err
 	}
-  
+
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return nil, err
 	}

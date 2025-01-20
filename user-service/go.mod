@@ -1,17 +1,20 @@
 module github.com/dharmasatrya/goodkarma/user-service
 
-go 1.22.5
+go 1.23.2
+
+toolchain go1.23.5
 
 require (
+	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-00010101000000-000000000000
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 	go.mongodb.org/mongo-driver v1.17.2
 	golang.org/x/crypto v0.28.0
 	google.golang.org/grpc v1.69.4
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.36.2
 )
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
@@ -25,3 +28,5 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 )
+
+replace github.com/dharmasatrya/goodkarma/payment-service => ../payment-service

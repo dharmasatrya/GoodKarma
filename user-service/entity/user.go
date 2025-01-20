@@ -50,6 +50,14 @@ type CreateUserRequest struct {
 }
 
 type CreateMerchantRequest struct {
+	Username          string `json:"username"`
+	Email             string `json:"email"`
+	Password          string `json:"password"`
+	Role              string `json:"role"`
+	FullName          string `json:"full_name"`
+	Address           string `json:"address"`
+	Phone             string `json:"phone"`
+	Photo             string `json:"photo"`
 	AccountHolderName string `json:"account_holder_name"`
 	BankCode          string `json:"bank_code"`
 	BankAccountNumber string `json:"bank_account_number"`
