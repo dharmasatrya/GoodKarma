@@ -31,8 +31,13 @@ func main() {
 
 	server := grpc.NewServer()
 
+	conn, mbChan := config.InitMessageBroker()
+	defer conn.Close()
+
+	messageBrokerService := service.NewMessageBroker(mbChan)
+
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, messageBrokerService)
 
 	pb.RegisterUserServiceServer(server, userService)
 
