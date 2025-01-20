@@ -83,7 +83,7 @@ func CreateXenditInvoice(req entity.XenditInvoiceRequest) (*entity.XenditInvoice
 	return &result, nil
 }
 
-func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) (map[string]interface{}, error) {
+func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) error {
 	// Prepare the request payload
 	xenditUrl := os.Getenv("XENDIT_DISBURSEMENT_URL")
 	payload := map[string]interface{}{
@@ -99,19 +99,19 @@ func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) 
 	// Convert payload to JSON
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling JSON: %v", err)
+		return fmt.Errorf("error marshaling JSON: %v", err)
 	}
 
 	// Create the request
 	request, err := http.NewRequest("POST", xenditUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Get API key from environment variable and encode it
 	apiKey := os.Getenv("XENDIT_API_KEY")
 	if apiKey == "" {
-		return nil, fmt.Errorf("XENDIT_API_KEY not found in environment variables")
+		return fmt.Errorf("XENDIT_API_KEY not found in environment variables")
 	}
 	encodedKey := base64.StdEncoding.EncodeToString([]byte(apiKey))
 
@@ -123,20 +123,20 @@ func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) 
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("error making request: %v", err)
+		return fmt.Errorf("error making request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// Parse the response
 	var result map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
+		return fmt.Errorf("error decoding response: %v", err)
 	}
 
 	// Check if response indicates an error
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("API request failed with status %d: %v", resp.StatusCode, result)
+		return fmt.Errorf("API request failed with status %d: %v", resp.StatusCode, result)
 	}
 
-	return result, nil
+	return nil
 }

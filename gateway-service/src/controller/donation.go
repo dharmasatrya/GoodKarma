@@ -29,11 +29,18 @@ func NewDonationController(donationService service.DonationService) *donationCon
 func (h *donationController) CreateDonation(c echo.Context) error {
 	var req dto.CreateDonationRequest
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.donationService.CreateDonation(req)
+	status, response := h.donationService.CreateDonation(token, req)
 
 	return c.JSON(status, response)
 }
@@ -51,6 +58,13 @@ func (h *donationController) CreateDonation(c echo.Context) error {
 // benerin docs ntaran
 func (h *donationController) UpdateDonationStatus(c echo.Context) error {
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	var req dto.UpdateDonationStatusRequest
 
 	req.ID = c.Param("id")
@@ -58,7 +72,36 @@ func (h *donationController) UpdateDonationStatus(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.donationService.UpdateDonationStatus(req)
+	status, response := h.donationService.UpdateDonationStatus(token, req)
+
+	return c.JSON(status, response)
+}
+
+func (h *donationController) GetAllDonationByUser(c echo.Context) error {
+
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
+	status, response := h.donationService.GetAllDonationByUser(token)
+
+	return c.JSON(status, response)
+}
+
+func (h *donationController) GetAllDonationByEventId(c echo.Context) error {
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
+	eventID := c.Param("event_id")
+
+	status, response := h.donationService.GetAllDonationByEventId(token, eventID)
 
 	return c.JSON(status, response)
 }

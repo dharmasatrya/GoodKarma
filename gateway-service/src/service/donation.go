@@ -7,11 +7,14 @@ import (
 	"net/http"
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
+	"google.golang.org/grpc/metadata"
 )
 
 type DonationService interface {
-	CreateDonation(input dto.CreateDonationRequest) (int, *dto.Donation)
-	UpdateDonationStatus(input dto.UpdateDonationStatusRequest) (int, *dto.Donation)
+	CreateDonation(token string, input dto.CreateDonationRequest) (int, *dto.Donation)
+	UpdateDonationStatus(token string, input dto.UpdateDonationStatusRequest) (int, *dto.Donation)
+	GetAllDonationByUser(token string) (int, []dto.Donation)
+	GetAllDonationByEventId(token string, eventID string) (int, []dto.Donation)
 }
 
 type donationService struct {
@@ -22,8 +25,12 @@ func NewDonationService(donationClient pb.DonationServiceClient) *donationServic
 	return &donationService{donationClient}
 }
 
-func (s *donationService) CreateDonation(input dto.CreateDonationRequest) (int, *dto.Donation) {
-	res, err := s.Client.CreateDonation(context.Background(), &pb.CreateDonationRequest{})
+func (s *donationService) CreateDonation(token string, input dto.CreateDonationRequest) (int, *dto.Donation) {
+
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := s.Client.CreateDonation(ctx, &pb.CreateDonationRequest{})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -40,8 +47,11 @@ func (s *donationService) CreateDonation(input dto.CreateDonationRequest) (int, 
 	return http.StatusOK, &response
 }
 
-func (s *donationService) UpdateDonationStatus(input dto.UpdateDonationStatusRequest) (int, *dto.Donation) {
-	res, err := s.Client.UpdateDonationStatus(context.Background(), &pb.UpdateDonationStatusRequest{})
+func (s *donationService) UpdateDonationStatus(token string, input dto.UpdateDonationStatusRequest) (int, *dto.Donation) {
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := s.Client.UpdateDonationStatus(ctx, &pb.UpdateDonationStatusRequest{})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -58,5 +68,52 @@ func (s *donationService) UpdateDonationStatus(input dto.UpdateDonationStatusReq
 	return http.StatusOK, &response
 }
 
-//get donation by user
-//get donation by event
+func (s *donationService) GetAllDonationByUser(token string) (int, []dto.Donation) {
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := s.Client.GetDonationsByUserId(ctx, &pb.GetDonationsByUserIdRequest{})
+	if err != nil {
+		log.Fatalf("error while create request %v", err)
+	}
+
+	donations := make([]dto.Donation, len(res.Donations))
+	for i, donation := range res.Donations {
+		donations[i] = dto.Donation{
+			ID:           donation.Id,
+			UserID:       donation.UserId,
+			EventID:      donation.EventId,
+			Amount:       donation.Amount,
+			Status:       donation.Amount,
+			DonationType: donation.DonationType,
+		}
+	}
+
+	return http.StatusOK, donations
+}
+
+func (s *donationService) GetAllDonationByEventId(token string, eventID string) (int, []dto.Donation) {
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := s.Client.GetDonationsByEventId(ctx, &pb.GetDonationsByEventIdRequest{
+		EventId: eventID,
+	})
+	if err != nil {
+		log.Fatalf("error while create request %v", err)
+	}
+
+	donations := make([]dto.Donation, len(res.Donations))
+	for i, donation := range res.Donations {
+		donations[i] = dto.Donation{
+			ID:           donation.Id,
+			UserID:       donation.UserId,
+			EventID:      donation.EventId,
+			Amount:       donation.Amount,
+			Status:       donation.Amount,
+			DonationType: donation.DonationType,
+		}
+	}
+
+	return http.StatusOK, donations
+}

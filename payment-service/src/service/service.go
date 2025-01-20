@@ -4,9 +4,11 @@ package service
 import (
 	"context"
 
+	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 	"github.com/dharmasatrya/goodkarma/payment-service/external"
 	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
+	"github.com/dharmasatrya/goodkarma/user-service/proto"
 
 	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
@@ -15,18 +17,21 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type PaymentService struct {
 	pb.UnimplementedPaymentServiceServer
 	paymentRepository repository.PaymentRepository
+	userClient        *client.UserServiceClient
 }
 
 // var jwtSecret = []byte("secret")
 
-func NewPaymentService(paymentRepository repository.PaymentRepository) *PaymentService {
+func NewPaymentService(paymentRepository repository.PaymentRepository, userClient *client.UserServiceClient) *PaymentService {
 	return &PaymentService{
 		paymentRepository: paymentRepository,
+		userClient:        userClient,
 	}
 }
 
@@ -58,6 +63,39 @@ func (s *PaymentService) CreateWallet(ctx context.Context, req *pb.CreateWalletR
 		BankCode:          res.BankCode,
 		BankAccountNumber: res.BankAccountNumber,
 		Amount:            res.Amount,
+	}, nil
+}
+
+func (s *PaymentService) GetWalletByUserId(ctx context.Context, req *emptypb.Empty) (*pb.GetWalletResponse, error) {
+	_, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
+	}
+
+	// Get claims from context that was set in auth middleware
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
+	}
+
+	// Extract user_id from claims and verify it matches the request
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
+	wallet, err := s.paymentRepository.GetWalletByUserId(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "wallet not found")
+	}
+
+	return &pb.GetWalletResponse{
+		Id:                wallet.ID.Hex(),
+		UserId:            wallet.UserID,
+		BankAccountName:   wallet.BankAccountName,
+		BankCode:          wallet.BankCode,
+		BankAccountNumber: wallet.BankAccountNumber,
+		Amount:            wallet.Amount,
 	}, nil
 }
 
@@ -125,5 +163,58 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 
 	return &pb.CreateInvoiceResponse{
 		InvoiceUrl: res.InvoiceURL,
+	}, nil
+}
+
+func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) (*pb.WithdrawResponse, error) {
+
+	_, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
+	}
+
+	// Get claims from context that was set in auth middleware
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
+	}
+
+	// Extract user_id from claims
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
+	wallet, errWallet := s.paymentRepository.GetWalletByUserId(ctx, userID)
+	if errWallet != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cant find wallet")
+	}
+
+	errBalance := s.paymentRepository.CheckBalanceForWithdrawal(ctx, entity.WithdrawRequest{UserId: userID, Amount: req.Amount})
+	if errBalance != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "insufficient balance")
+	}
+
+	userDetail, errUser := s.userClient.Client.GetUserById(ctx, &proto.GetUserByIdRequest{Id: userID})
+	if errUser != nil {
+		return nil, status.Errorf(codes.Internal, "cant get user detail")
+	}
+
+	disbursement := entity.XenditDisbursementRequest{
+		ExternalId:        "111",
+		Amount:            int(req.Amount),
+		BankCode:          wallet.BankCode,
+		AccountHolderName: wallet.BankAccountName,
+		Description:       "withdraw funds from GoodKarma",
+		Email:             userDetail.Email,
+	}
+
+	err := external.CreateXenditDisbursement(disbursement)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error creating wallet")
+	}
+
+	return &pb.WithdrawResponse{
+		Message: "Disbursement created, balance will be deducted once the disbursement has been completed",
 	}, nil
 }
