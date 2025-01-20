@@ -4,15 +4,14 @@ type Donation struct {
 	ID           string `json:"id" bson:"id"`
 	UserID       string `json:"user_id" bson:"user_id"`
 	EventID      string `json:"event_id" bson:"event_id"`
-	Amount       string `json:"amount" bson:"amount"`
+	Amount       uint32 `json:"amount" bson:"amount"`
 	Status       string `json:"status" bson:"status"`
 	DonationType string `json:"donation_type" bson:"donation_type"`
 }
 
 type CreateDonationRequest struct {
-	UserID       string `json:"user_id" bson:"user_id"`
 	EventID      string `json:"event_id" bson:"event_id"`
-	Amount       string `json:"amount" bson:"amount"`
+	Amount       uint32 `json:"amount" bson:"amount"`
 	DonationType string `json:"donation_type" bson:"donation_type"`
 }
 

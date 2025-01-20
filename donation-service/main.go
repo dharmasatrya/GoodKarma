@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/middleware"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/config"
@@ -33,9 +34,15 @@ func main() {
 		log.Fatalf("Error connecting to db")
 	}
 
+	paymentServiceUrl := "localhost:50051"
+	paymentClient, err := client.NewPaymentServiceClient(paymentServiceUrl)
+	if err != nil {
+		log.Fatalf("Failed to create user service client: %v", err)
+	}
+
 	donationRepository := repository.NewDonationRepository(db)
 
-	donationService := service.NewDonationService(donationRepository)
+	donationService := service.NewDonationService(donationRepository, paymentClient)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")

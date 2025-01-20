@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -13,16 +14,20 @@ import (
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/repository"
 	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserService struct {
 	userRepository repository.UserRepository
+	messageBroker  MessageBroker
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserService(userRepository repository.UserRepository) *UserService {
+func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker) *UserService {
 	return &UserService{
 		userRepository: userRepository,
+		messageBroker:  messageBroker,
 	}
 }
 
@@ -46,6 +51,22 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 
 	if err != nil {
 		return nil, err
+	}
+
+	tokenString, err := us.generateJWTToken(result)
+
+	dataJsonRequest := entity.UserRegistData{
+		Email: req.Email,
+		Link:  tokenString,
+	}
+
+	dataJson, err := json.Marshal(dataJsonRequest)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.CreateUserSupporterResponse{
@@ -97,6 +118,22 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 
 	if err != nil {
 		return nil, err
+	}
+
+	tokenString, err := us.generateJWTToken(result)
+
+	dataJsonRequest := entity.UserRegistData{
+		Email: req.Email,
+		Link:  tokenString,
+	}
+
+	dataJson, err := json.Marshal(dataJsonRequest)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.CreateUserCoordinatorResponse{
@@ -250,7 +287,6 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 	tokenString, err := token.SignedString([]byte(jwtSecretKey))
-
 	if err != nil {
 		log.Println(err)
 		return "", err

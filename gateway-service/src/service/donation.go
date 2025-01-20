@@ -30,7 +30,12 @@ func (s *donationService) CreateDonation(token string, input dto.CreateDonationR
 	md := metadata.Pairs("authorization", token)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	res, err := s.Client.CreateDonation(ctx, &pb.CreateDonationRequest{})
+	res, err := s.Client.CreateDonation(ctx, &pb.CreateDonationRequest{
+		EventId:      input.EventID,
+		Amount:       input.Amount,
+		Status:       "PENDING",
+		DonationType: input.DonationType,
+	})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -51,7 +56,10 @@ func (s *donationService) UpdateDonationStatus(token string, input dto.UpdateDon
 	md := metadata.Pairs("authorization", token)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	res, err := s.Client.UpdateDonationStatus(ctx, &pb.UpdateDonationStatusRequest{})
+	res, err := s.Client.UpdateDonationStatus(ctx, &pb.UpdateDonationStatusRequest{
+		Id:     input.ID,
+		Status: input.Status,
+	})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -84,7 +92,7 @@ func (s *donationService) GetAllDonationByUser(token string) (int, []dto.Donatio
 			UserID:       donation.UserId,
 			EventID:      donation.EventId,
 			Amount:       donation.Amount,
-			Status:       donation.Amount,
+			Status:       donation.Status,
 			DonationType: donation.DonationType,
 		}
 	}
@@ -110,7 +118,7 @@ func (s *donationService) GetAllDonationByEventId(token string, eventID string) 
 			UserID:       donation.UserId,
 			EventID:      donation.EventId,
 			Amount:       donation.Amount,
-			Status:       donation.Amount,
+			Status:       donation.Status,
 			DonationType: donation.DonationType,
 		}
 	}
