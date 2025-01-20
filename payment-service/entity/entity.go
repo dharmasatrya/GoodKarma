@@ -5,7 +5,7 @@ import (
 )
 
 type Wallet struct {
-	ID                primitive.ObjectID `bson:"id,omitempty"`
+	ID                primitive.ObjectID `bson:"_id,omitempty"`
 	UserID            string             `bson:"user_id"`
 	BankAccountName   string             `bson:"bank_account_name"`
 	BankCode          string             `bson:"bank_code"`

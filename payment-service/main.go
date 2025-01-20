@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/middleware"
 	"github.com/joho/godotenv"
 
@@ -39,9 +40,15 @@ func main() {
 		log.Fatalf("Error connecting to db")
 	}
 
+	userServiceUrl := "localhost:50051"
+	userClient, err := client.NewUserServiceClient(userServiceUrl)
+	if err != nil {
+		log.Fatalf("Failed to create user service client: %v", err)
+	}
+
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	paymentService := service.NewPaymentService(paymentRepository)
+	paymentService := service.NewPaymentService(paymentRepository, userClient)
 	pb.RegisterPaymentServiceServer(grpcServer, paymentService)
 
 	log.Println("Server is running on port 50053...")

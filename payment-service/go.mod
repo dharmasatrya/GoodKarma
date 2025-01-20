@@ -3,6 +3,7 @@ module github.com/dharmasatrya/goodkarma/payment-service
 go 1.23.2
 
 require (
+	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/joho/godotenv v1.5.1
 	go.mongodb.org/mongo-driver v1.17.2
