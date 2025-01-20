@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,6 +24,7 @@ const (
 	PaymentService_UpdateWalletBalance_FullMethodName = "/payment.PaymentService/UpdateWalletBalance"
 	PaymentService_Withdraw_FullMethodName            = "/payment.PaymentService/Withdraw"
 	PaymentService_CreateInvoice_FullMethodName       = "/payment.PaymentService/CreateInvoice"
+	PaymentService_GetWalletByUserId_FullMethodName   = "/payment.PaymentService/GetWalletByUserId"
 )
 
 // PaymentServiceClient is the client API for PaymentService service.
@@ -33,6 +35,7 @@ type PaymentServiceClient interface {
 	UpdateWalletBalance(ctx context.Context, in *UpdateWalletBalanceRequest, opts ...grpc.CallOption) (*UpdateWalleetBalanceResponse, error)
 	Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*WithdrawResponse, error)
 	CreateInvoice(ctx context.Context, in *CreateInvoiceRequest, opts ...grpc.CallOption) (*CreateInvoiceResponse, error)
+	GetWalletByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetWalletResponse, error)
 }
 
 type paymentServiceClient struct {
@@ -83,6 +86,16 @@ func (c *paymentServiceClient) CreateInvoice(ctx context.Context, in *CreateInvo
 	return out, nil
 }
 
+func (c *paymentServiceClient) GetWalletByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetWalletResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWalletResponse)
+	err := c.cc.Invoke(ctx, PaymentService_GetWalletByUserId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentServiceServer is the server API for PaymentService service.
 // All implementations must embed UnimplementedPaymentServiceServer
 // for forward compatibility.
@@ -91,6 +104,7 @@ type PaymentServiceServer interface {
 	UpdateWalletBalance(context.Context, *UpdateWalletBalanceRequest) (*UpdateWalleetBalanceResponse, error)
 	Withdraw(context.Context, *WithdrawRequest) (*WithdrawResponse, error)
 	CreateInvoice(context.Context, *CreateInvoiceRequest) (*CreateInvoiceResponse, error)
+	GetWalletByUserId(context.Context, *emptypb.Empty) (*GetWalletResponse, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
 
@@ -112,6 +126,9 @@ func (UnimplementedPaymentServiceServer) Withdraw(context.Context, *WithdrawRequ
 }
 func (UnimplementedPaymentServiceServer) CreateInvoice(context.Context, *CreateInvoiceRequest) (*CreateInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateInvoice not implemented")
+}
+func (UnimplementedPaymentServiceServer) GetWalletByUserId(context.Context, *emptypb.Empty) (*GetWalletResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletByUserId not implemented")
 }
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
 func (UnimplementedPaymentServiceServer) testEmbeddedByValue()                        {}
@@ -206,6 +223,24 @@ func _PaymentService_CreateInvoice_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PaymentService_GetWalletByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).GetWalletByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PaymentService_GetWalletByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).GetWalletByUserId(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +263,10 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateInvoice",
 			Handler:    _PaymentService_CreateInvoice_Handler,
+		},
+		{
+			MethodName: "GetWalletByUserId",
+			Handler:    _PaymentService_GetWalletByUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
