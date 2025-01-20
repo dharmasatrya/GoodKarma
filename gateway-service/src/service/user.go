@@ -8,8 +8,8 @@ import (
 )
 
 type UserService interface {
-	RegisterUserSupporter(entity.CreateUserRequest) error
-	RegisterUserCoordinator(entity.CreateUserRequest, entity.CreateMerchantRequest) error
+	RegisterUserSupporter(entity.CreateUserSupporterRequest) error
+	RegisterUserCoordinator(entity.CreateUserCoordinatorRequest) error
 	Login(entity.LoginRequest) (*pb.LoginResponse, error)
 }
 
@@ -21,7 +21,7 @@ func NewUserService(userClient pb.UserServiceClient) *userService {
 	return &userService{userClient}
 }
 
-func (us *userService) RegisterUserSupporter(payload entity.CreateUserRequest) error {
+func (us *userService) RegisterUserSupporter(payload entity.CreateUserSupporterRequest) error {
 	_, err := us.Client.CreateUserSupporter(context.Background(), &pb.CreateUserSupporterRequest{
 		Username: payload.Username,
 		Email:    payload.Email,
@@ -40,16 +40,19 @@ func (us *userService) RegisterUserSupporter(payload entity.CreateUserRequest) e
 	return nil
 }
 
-func (us *userService) RegisterUserCoordinator(payload entity.CreateUserRequest, payloadWallet entity.CreateMerchantRequest) error {
+func (us *userService) RegisterUserCoordinator(payload entity.CreateUserCoordinatorRequest) error {
 	_, err := us.Client.CreateUserCoordinator(context.Background(), &pb.CreateUserCoordinatorRequest{
-		Username: payload.Username,
-		Email:    payload.Email,
-		Password: payload.Password,
-		Role:     "organizer",
-		FullName: payload.FullName,
-		Address:  payload.Address,
-		Phone:    payload.Phone,
-		Photo:    payload.Photo,
+		Username:          payload.Username,
+		Email:             payload.Email,
+		Password:          payload.Password,
+		Role:              "coordinator",
+		FullName:          payload.FullName,
+		Address:           payload.Address,
+		Phone:             payload.Phone,
+		Photo:             payload.Photo,
+		AccountHolderName: payload.AccountHolderName,
+		BankCode:          payload.BankCode,
+		BankAccountNumber: payload.BankAccountNumber,
 	})
 
 	if err != nil {

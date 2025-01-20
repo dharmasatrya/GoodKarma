@@ -25,7 +25,7 @@ func NewUserService(userRepository repository.UserRepository) *UserService {
 }
 
 func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUserSupporterRequest) (*pb.CreateUserSupporterResponse, error) {
-	payload := entity.CreateUserRequest{
+	payload := entity.CreateUserSupporterRequest{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -40,7 +40,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		return nil, err
 	}
 
-	result, err := us.userRepository.CreateUser(payload)
+	result, err := us.userRepository.CreateUserSupporter(payload)
 
 	if err != nil {
 		return nil, err
@@ -52,7 +52,21 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 }
 
 func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.CreateUserCoordinatorRequest) (*pb.CreateUserCoordinatorResponse, error) {
-	reqUser := entity.CreateUserRequest{
+	payload := entity.CreateUserCoordinatorRequest{
+		Username:          req.Username,
+		Email:             req.Email,
+		Password:          req.Password,
+		Role:              req.Role,
+		FullName:          req.FullName,
+		Address:           req.Address,
+		Phone:             req.Phone,
+		Photo:             req.Photo,
+		AccountHolderName: req.AccountHolderName,
+		BankCode:          req.BankCode,
+		BankAccountNumber: req.BankAccountNumber,
+	}
+
+	reqUser := entity.CreateUserSupporterRequest{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -63,12 +77,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		Photo:    req.Photo,
 	}
 
-	// bankName, err := us.getBankName(req.BankCode)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	reqBank := entity.CreateMerchantRequest{
+	reqBank := entity.CreateUserCoordinatorRequest{
 		AccountHolderName: req.AccountHolderName,
 		BankCode:          req.BankCode,
 		BankAccountNumber: req.BankAccountNumber,
@@ -82,7 +91,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		return nil, err
 	}
 
-	result, err := us.userRepository.CreateMerchant(reqUser, reqBank)
+	result, err := us.userRepository.CreateUserCoordinator(payload)
 
 	if err != nil {
 		return nil, err
@@ -136,7 +145,7 @@ func (us *UserService) GetUserById(ctx context.Context, req *pb.GetUserByIdReque
 	}, nil
 }
 
-func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) error {
+func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")
 	}
@@ -188,7 +197,7 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) e
 	return nil
 }
 
-func (us *UserService) validateBankRequest(req entity.CreateMerchantRequest) error {
+func (us *UserService) validateBankRequest(req entity.CreateUserCoordinatorRequest) error {
 	if req.AccountHolderName == "" {
 		return fmt.Errorf("account holder name is required")
 	}
@@ -219,18 +228,3 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 
 	return tokenString, nil
 }
-
-// func (us *UserService) getBankName(bankCode string) (string, error) {
-// 	bankList, err := helper.GetBankList()
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	for _, bank := range *bankList {
-// 		if bank.Code == strings.ToUpper(bankCode) {
-// 			return bank.Name, nil
-// 		}
-// 	}
-
-// 	return "", fmt.Errorf("bank code is invalid")
-// }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"gateway-service/src/service"
 	"net/http"
 
@@ -19,7 +18,7 @@ func NewUserController(userService service.UserService) *userController {
 }
 
 func (us *userController) RegisterUserSupporter(c echo.Context) error {
-	var payload entity.CreateUserRequest
+	var payload entity.CreateUserSupporterRequest
 
 	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, entity.ResponseError{
@@ -29,7 +28,6 @@ func (us *userController) RegisterUserSupporter(c echo.Context) error {
 
 	err := us.userService.RegisterUserSupporter(payload)
 
-	fmt.Println(err)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
@@ -43,8 +41,7 @@ func (us *userController) RegisterUserSupporter(c echo.Context) error {
 }
 
 func (us *userController) RegisterUserCoordinator(c echo.Context) error {
-	var payload entity.CreateUserRequest
-	var payloadWallet entity.CreateMerchantRequest
+	var payload entity.CreateUserCoordinatorRequest
 
 	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, entity.ResponseError{
@@ -52,13 +49,7 @@ func (us *userController) RegisterUserCoordinator(c echo.Context) error {
 		})
 	}
 
-	if err := c.Bind(&payloadWallet); err != nil {
-		return c.JSON(http.StatusBadRequest, entity.ResponseError{
-			Message: "Invalid request payload",
-		})
-	}
-
-	err := us.userService.RegisterUserCoordinator(payload, payloadWallet)
+	err := us.userService.RegisterUserCoordinator(payload)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{

@@ -38,7 +38,7 @@ type Wallet struct {
 	BankAccountNumber string             `json:"bank_account_number" bson:"bank_account_number"`
 }
 
-type CreateUserRequest struct {
+type CreateUserSupporterRequest struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -49,7 +49,15 @@ type CreateUserRequest struct {
 	Photo    string `json:"photo"`
 }
 
-type CreateMerchantRequest struct {
+type CreateUserCoordinatorRequest struct {
+	Username          string `json:"username"`
+	Email             string `json:"email"`
+	Password          string `json:"password"`
+	Role              string `json:"role"`
+	FullName          string `json:"full_name"`
+	Address           string `json:"address"`
+	Phone             string `json:"phone"`
+	Photo             string `json:"photo"`
 	AccountHolderName string `json:"account_holder_name"`
 	BankCode          string `json:"bank_code"`
 	BankAccountNumber string `json:"bank_account_number"`
