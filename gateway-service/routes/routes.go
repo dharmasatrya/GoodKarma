@@ -23,11 +23,9 @@ func NewRouter() *echo.Echo {
 		e.Logger.Fatalf("did not connect: %v", err)
 	}
 
-	// userClient := pb.NewUserServiceClient(userConnection)
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
 
-	// userClient := pb.NewUserServiceClient(userConnection)
 	eventService := service.NewEventService(eventClient)
 	eventController := controller.NewEventController(eventService)
 
@@ -40,6 +38,7 @@ func NewRouter() *echo.Echo {
 		user.POST("/register/supporters", userController.RegisterUserSupporter)
 		user.POST("/register/coordinators", userController.RegisterUserCoordinator)
 		user.POST("/login", userController.Login)
+		user.GET("/:id", userController.GetUserById)
 	}
 
 	event := e.Group("/events")
