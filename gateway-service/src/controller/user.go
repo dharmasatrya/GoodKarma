@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"gateway-service/src/service"
 	"net/http"
 
@@ -29,7 +28,6 @@ func (us *userController) RegisterUserSupporter(c echo.Context) error {
 
 	err := us.userService.RegisterUserSupporter(payload)
 
-	fmt.Println(err)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
