@@ -16,6 +16,20 @@ func NewPaymentController(paymentService service.PaymentService) *paymentControl
 	return &paymentController{paymentService}
 }
 
+func (h *paymentController) GetWalletByUserId(c echo.Context) error {
+
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
+	status, response := h.paymentService.GetWalletByUserId(token)
+
+	return c.JSON(status, response)
+}
+
 // CreatePayment godoc
 // @Summary Register a new payment
 // @Tags payments
@@ -29,11 +43,18 @@ func NewPaymentController(paymentService service.PaymentService) *paymentControl
 func (h *paymentController) Withdraw(c echo.Context) error {
 	var req dto.WithdrawRequest
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.paymentService.Withdraw(req)
+	status, response := h.paymentService.Withdraw(token, req)
 
 	return c.JSON(status, response)
 }
@@ -51,11 +72,18 @@ func (h *paymentController) Withdraw(c echo.Context) error {
 func (h *paymentController) CreateInvoice(c echo.Context) error {
 	var req dto.CreateInvoiceRequest
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.paymentService.CreateInvoice(req)
+	status, response := h.paymentService.CreateInvoice(token, req)
 
 	return c.JSON(status, response)
 }
@@ -73,6 +101,11 @@ func (h *paymentController) CreateInvoice(c echo.Context) error {
 func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
 	var req dto.XenditCallback
 
+	callbackToken := c.Request().Header.Get("x-callback-token")
+	if callbackToken == "" {
+		return c.JSON(http.StatusUnauthorized, "Missing callback token")
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
@@ -81,7 +114,7 @@ func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
 		Amount: req.Amount,
 		Type:   "money_in",
 	}
-	status, response := h.paymentService.UpdateWalletBalance(balanceUpdateReq)
+	status, response := h.paymentService.UpdateWalletBalance(callbackToken, balanceUpdateReq)
 
 	return c.JSON(status, response)
 }
@@ -99,6 +132,11 @@ func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
 func (h *paymentController) XenditDisbursementCallback(c echo.Context) error {
 	var req dto.XenditCallback
 
+	callbackToken := c.Request().Header.Get("x-callback-token")
+	if callbackToken == "" {
+		return c.JSON(http.StatusUnauthorized, "Missing callback token")
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
@@ -107,7 +145,7 @@ func (h *paymentController) XenditDisbursementCallback(c echo.Context) error {
 		Amount: req.Amount,
 		Type:   "money_out",
 	}
-	status, response := h.paymentService.UpdateWalletBalance(balanceUpdateReq)
+	status, response := h.paymentService.UpdateWalletBalance(callbackToken, balanceUpdateReq)
 
 	return c.JSON(status, response)
 }
