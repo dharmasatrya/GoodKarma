@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package payment;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "github.com/dharmasatrya/goodkarma/payment-service/proto";
 
 service PaymentService {
@@ -9,6 +11,7 @@ service PaymentService {
     rpc UpdateWalletBalance (UpdateWalletBalanceRequest) returns (UpdateWalleetBalanceResponse);
     rpc Withdraw (WithdrawRequest) returns (WithdrawResponse);
     rpc CreateInvoice (CreateInvoiceRequest) returns (CreateInvoiceResponse);
+    rpc GetWalletByUserId (google.protobuf.Empty) returns (GetWalletResponse);
 }
 
 message CreateWalletRequest {
@@ -27,10 +30,18 @@ message CreateWalletResponse {
     uint32 amount = 6;
 }
 
-message UpdateWalletBalanceRequest {
+message GetWalletResponse {
     string id = 1;
-    uint32 amount = 2;
-    string type = 3;
+    string user_id = 2;
+    string bank_account_name = 3;
+    string bank_code = 4;
+    string bank_account_number = 5;
+    uint32 amount = 6;
+}
+
+message UpdateWalletBalanceRequest {
+    uint32 amount = 1;
+    string type = 2;
 }
 
 message UpdateWalleetBalanceResponse {
@@ -47,12 +58,7 @@ message WithdrawRequest {
 }
 
 message WithdrawResponse {
-    string id = 1;
-    string user_id = 2;
-    string bank_account_name = 3;
-    string bank_code = 4;
-    string bank_account_number = 5;
-    uint32 amount = 6;
+    string message = 1;
 }
 
 message CreateInvoiceRequest {
