@@ -23,6 +23,11 @@ func NewRouter() *echo.Echo {
 		e.Logger.Fatalf("did not connect: %v", err)
 	}
 
+	paymentClient, err := config.InitPaymentServiceClient()
+	if err != nil {
+		e.Logger.Fatalf("did not connect: %v", err)
+	}
+
 	// userClient := pb.NewUserServiceClient(userConnection)
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
@@ -30,6 +35,9 @@ func NewRouter() *echo.Echo {
 	// userClient := pb.NewUserServiceClient(userConnection)
 	eventService := service.NewEventService(eventClient)
 	eventController := controller.NewEventController(eventService)
+
+	paymentService := service.NewPaymentService(paymentClient)
+	paymentController := controller.NewPaymentController(paymentService)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -61,10 +69,11 @@ func NewRouter() *echo.Echo {
 	// 	donation.GET("/:id", donationController.GetAllDonationByEventId)
 	// }
 
-	// payment := e.Group("/payments")
-	// payment.GET("/wallets/:id", paymentController.GetWallet)
-	// payment.POST("/withdraw", paymentController.Withdraw)
-	// payment.POST("/invoice", paymentController.CreateInvoice)
+	payment := e.Group("/payments")
+	payment.GET("/wallets", paymentController.GetWalletByUserId)
+	payment.POST("/withdraw", paymentController.Withdraw)
+	payment.POST("/invoice", paymentController.XenditInvoiceCallback)
+	payment.POST("/xenditcallback/invoice", paymentController.XenditDisbursementCallback)
 
 	return e
 }
