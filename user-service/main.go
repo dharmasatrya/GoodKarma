@@ -17,7 +17,7 @@ import (
 func main() {
 	godotenv.Load()
 
-	listen, err := net.Listen("tcp", ":50052")
+	listen, err := net.Listen("tcp", ":50051")
 
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)

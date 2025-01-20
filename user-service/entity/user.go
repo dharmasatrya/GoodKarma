@@ -67,3 +67,11 @@ type LoginRequest struct {
 	UsernameOrEmail string `json:"username_or_email"`
 	Password        string `json:"password"`
 }
+
+type UpdateProfileRequest struct {
+	UserID   string `json:"user_id"`
+	FullName string `json:"full_name"`
+	Address  string `json:"address"`
+	Phone    string `json:"phone"`
+	Photo    string `json:"photo"`
+}
