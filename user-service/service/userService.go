@@ -147,6 +147,24 @@ func (us *UserService) GetUserById(ctx context.Context, req *pb.GetUserByIdReque
 	}, nil
 }
 
+func (us *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
+	payload := entity.UpdateProfileRequest{
+		UserID:   req.Id,
+		FullName: req.FullName,
+		Address:  req.Address,
+		Phone:    req.Phone,
+		Photo:    req.Photo,
+	}
+
+	res, err := us.userRepository.UpdateProfile(payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateProfileResponse{Id: res.ID.Hex()}, nil
+}
+
 func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")
