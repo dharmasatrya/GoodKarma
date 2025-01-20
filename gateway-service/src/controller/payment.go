@@ -59,3 +59,55 @@ func (h *paymentController) CreateInvoice(c echo.Context) error {
 
 	return c.JSON(status, response)
 }
+
+// LoginPayment godoc
+// @Summary Login
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param order body dto.LoginRequest true "Login Information"
+// @Success 201 {object} dto.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /payments/login [post]
+func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
+	var req dto.XenditCallback
+
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
+	}
+
+	balanceUpdateReq := dto.UpdateWalletBalanceRequest{
+		Amount: req.Amount,
+		Type:   "money_in",
+	}
+	status, response := h.paymentService.UpdateWalletBalance(balanceUpdateReq)
+
+	return c.JSON(status, response)
+}
+
+// LoginPayment godoc
+// @Summary Login
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param order body dto.LoginRequest true "Login Information"
+// @Success 201 {object} dto.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /payments/login [post]
+func (h *paymentController) XenditDisbursementCallback(c echo.Context) error {
+	var req dto.XenditCallback
+
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
+	}
+
+	balanceUpdateReq := dto.UpdateWalletBalanceRequest{
+		Amount: req.Amount,
+		Type:   "money_out",
+	}
+	status, response := h.paymentService.UpdateWalletBalance(balanceUpdateReq)
+
+	return c.JSON(status, response)
+}

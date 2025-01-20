@@ -6,13 +6,12 @@ require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-00010101000000-000000000000
-	github.com/dharmasatrya/goodkarma/user-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/swaggo/echo-swagger v1.4.1
-	golang.org/x/crypto v0.31.0
 	google.golang.org/grpc v1.69.4
-	google.golang.org/protobuf v1.36.2
 )
 
 require (
@@ -24,7 +23,6 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -35,12 +33,14 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.mongodb.org/mongo-driver v1.17.2 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
+	google.golang.org/protobuf v1.36.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
