@@ -5,13 +5,14 @@ go 1.23.2
 require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
-	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/swaggo/echo-swagger v1.4.1
 	google.golang.org/grpc v1.69.4
+	google.golang.org/protobuf v1.36.2
 )
 
 require (
@@ -40,7 +41,6 @@ require (
 	golang.org/x/time v0.8.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
-	google.golang.org/protobuf v1.36.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"gateway-service/dto"
 	"log"
 	"net/http"
@@ -31,7 +32,9 @@ func (u *paymentService) Withdraw(token string, input dto.WithdrawRequest) (int,
 	md := metadata.Pairs("authorization", token)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	res, err := u.Client.Withdraw(ctx, &pb.WithdrawRequest{})
+	res, err := u.Client.Withdraw(ctx, &pb.WithdrawRequest{
+		Amount: input.Amount,
+	})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -88,8 +91,12 @@ func (u *paymentService) UpdateWalletBalance(callbackToken string, input dto.Upd
 }
 
 func (u *paymentService) GetWalletByUserId(token string) (int, *dto.Wallet) {
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	res, err := u.Client.GetWalletByUserId(context.Background(), &emptypb.Empty{})
+	fmt.Println(token)
+
+	res, err := u.Client.GetWalletByUserId(ctx, &emptypb.Empty{})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}

@@ -219,7 +219,7 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 		"exp":     time.Now().Add(time.Hour * 1).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte("hacktiv8p3gc2"))
+	tokenString, err := token.SignedString([]byte("your-256-bit-secret"))
 
 	if err != nil {
 		log.Println(err)

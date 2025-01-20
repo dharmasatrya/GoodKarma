@@ -19,6 +19,7 @@ var protectedMethods = map[string]bool{
 	"/payment.PaymentService/UpdateWalletBalance": true,
 	"/payment.PaymentService/Withdraw":            true,
 	"/payment.PaymentService/CreateInvoice":       true,
+	"/payment.PaymentService/GetWalletByUserId":   true, // Add this
 }
 
 func UnaryAuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

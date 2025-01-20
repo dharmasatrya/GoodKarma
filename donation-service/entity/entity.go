@@ -5,10 +5,10 @@ import (
 )
 
 type Donation struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	UserID       string             `bson:"user_id"`
-	EventID      string             `bson:"event_id"`
-	Amount       string             `bson:"amount"`
-	Status       string             `bson:"status"`
-	DonationType string             `bson:"donation_type"`
+	ID           primitive.ObjectID `json:"id" bson:"_id"`
+	UserID       string             `json:"user_id" bson:"user_id"`
+	EventID      string             `json:"event_id" bson:"event_id"`
+	Amount       uint32             `json:"amount" bson:"amount"`
+	Status       string             `json:"status" bson:"status"`
+	DonationType string             `json:"donation_type" bson:"donation_type"`
 }
