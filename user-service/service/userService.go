@@ -40,7 +40,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		return nil, err
 	}
 
-	result, err := us.userRepository.CreateUser(payload)
+	result, err := us.userRepository.CreateUserSupporter(payload)
 
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		return nil, err
 	}
 
-	result, err := us.userRepository.CreateMerchant(payload)
+	result, err := us.userRepository.CreateUserCoordinator(payload)
 
 	if err != nil {
 		return nil, err

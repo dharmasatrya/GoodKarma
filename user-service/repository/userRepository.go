@@ -17,8 +17,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(entity.CreateUserSupporterRequest) (*entity.User, error)
-	CreateMerchant(entity.CreateUserCoordinatorRequest) (*entity.User, error)
+	CreateUserSupporter(entity.CreateUserSupporterRequest) (*entity.User, error)
+	CreateUserCoordinator(entity.CreateUserCoordinatorRequest) (*entity.User, error)
 	Login(entity.LoginRequest) (*entity.User, error)
 	GetUserById(string) (*entity.DetailUser, error)
 }
@@ -45,7 +45,7 @@ func NewUserRepository(DB *mongo.Database) UserRepository {
 	}
 }
 
-func (ur *userRepository) CreateUser(request entity.CreateUserSupporterRequest) (*entity.User, error) {
+func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporterRequest) (*entity.User, error) {
 	userCollection := ur.GetUserCollection()
 	profileCollection := ur.GetProfileCollection()
 
@@ -91,7 +91,7 @@ func (ur *userRepository) CreateUser(request entity.CreateUserSupporterRequest) 
 	return &newUser, nil
 }
 
-func (ur *userRepository) CreateMerchant(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
+func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
 	var user *entity.CreateUserSupporterRequest
 
 	user = &entity.CreateUserSupporterRequest{
@@ -105,7 +105,7 @@ func (ur *userRepository) CreateMerchant(request entity.CreateUserCoordinatorReq
 		Photo:    request.Photo,
 	}
 
-	res, err := ur.CreateUser(*user)
+	res, err := ur.CreateUserSupporter(*user)
 
 	if err != nil {
 		return nil, err
