@@ -35,10 +35,6 @@ func (ur *userRepository) GetProfileCollection() *mongo.Collection {
 	return ur.db.Collection("profiles")
 }
 
-func (ur *userRepository) GetWalletCollection() *mongo.Collection {
-	return ur.db.Collection("wallets")
-}
-
 func NewUserRepository(DB *mongo.Database) UserRepository {
 	return &userRepository{
 		db: DB,
@@ -111,22 +107,7 @@ func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordin
 		return nil, err
 	}
 
-	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
-	grpcConn, err := grpc.NewClient(paymentServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, err
-	}
-
-	defer grpcConn.Close()
-
-	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
-
-	_, err = paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
-		UserId:            res.ID.Hex(),
-		BankAccountName:   request.AccountHolderName,
-		BankCode:          request.BankCode,
-		BankAccountNumber: request.BankAccountNumber,
-	})
+	err = createWallet(res.ID.Hex(), request)
 
 	if err != nil {
 		return nil, err
@@ -164,6 +145,7 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 	profileCollection := ur.GetProfileCollection()
 
 	var user entity.DetailUser
+	var profile entity.Profile
 
 	userID, err := primitive.ObjectIDFromHex(id)
 
@@ -180,8 +162,6 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 		return nil, err
 	}
 
-	var profile entity.Profile
-
 	err = profileCollection.FindOne(context.Background(), primitive.M{"user_id": userID}).Decode(&profile)
 
 	if err != nil {
@@ -194,6 +174,38 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 	user.Photo = profile.Photo
 
 	return &user, nil
+}
+
+func createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
+	// Get payment service URI
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
+	if paymentServiceURI == "" {
+		return fmt.Errorf("PAYMENT_SERVICE_URI is not set")
+	}
+
+	// Create gRPC connection
+	grpcConn, err := grpc.NewClient(paymentServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("failed to connect to payment service: %w", err)
+	}
+	defer grpcConn.Close()
+
+	// Initialize payment client
+	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
+
+	// Make the gRPC call to create a wallet
+	_, err = paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
+		UserId:            userID,
+		BankAccountName:   request.AccountHolderName,
+		BankCode:          request.BankCode,
+		BankAccountNumber: request.BankAccountNumber,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create wallet: %w", err)
+	}
+
+	return nil
 }
 
 func (ur *userRepository) validateCreateUser(request entity.CreateUserSupporterRequest) error {

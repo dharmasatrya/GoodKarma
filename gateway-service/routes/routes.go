@@ -37,7 +37,6 @@ func NewRouter() *echo.Echo {
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
 
-	// userClient := pb.NewUserServiceClient(userConnection)
 	eventService := service.NewEventService(eventClient)
 	eventController := controller.NewEventController(eventService)
 
@@ -56,6 +55,7 @@ func NewRouter() *echo.Echo {
 		user.POST("/register/supporters", userController.RegisterUserSupporter)
 		user.POST("/register/coordinators", userController.RegisterUserCoordinator)
 		user.POST("/login", userController.Login)
+		user.GET("/:id", userController.GetUserById)
 	}
 
 	event := e.Group("/events")

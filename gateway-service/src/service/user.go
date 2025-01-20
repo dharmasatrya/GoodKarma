@@ -11,6 +11,7 @@ type UserService interface {
 	RegisterUserSupporter(entity.CreateUserSupporterRequest) error
 	RegisterUserCoordinator(entity.CreateUserCoordinatorRequest) error
 	Login(entity.LoginRequest) (*pb.LoginResponse, error)
+	GetUserById(string) (*pb.GetUserByIdResponse, error)
 }
 
 type userService struct {
@@ -75,30 +76,14 @@ func (us *userService) Login(input entity.LoginRequest) (*pb.LoginResponse, erro
 	return res, nil
 }
 
-// func (u *userService) RegisterUser(input dto.RegisterRequest) (int, *dto.User) {
-// 	res, err := u.Client.RegisterUser(context.Background(), &pb.RegistrationRequest{})
-// 	if err != nil {
-// 		log.Fatalf("error while create request %v", err)
-// 	}
+func (us *userService) GetUserById(id string) (*pb.GetUserByIdResponse, error) {
+	res, err := us.Client.GetUserById(context.Background(), &pb.GetUserByIdRequest{
+		Id: id,
+	})
 
-// 	response := dto.User{
-// 		Username: res.Username,
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	return http.StatusOK, &response
-// }
-
-// func (u *userService) LoginUser(input dto.LoginRequest) (int, *dto.LoginResponse) {
-// 	res, err := u.Client.LoginUser(context.Background(), &pb.LoginRequest{Username: input.Username, Password: input.Password})
-// 	if err != nil {
-// 		log.Fatalf("error while create request %v", err)
-// 	}
-
-// 	response := dto.LoginResponse{
-// 		Token:        res.Token,
-// 		Success:      true,
-// 		ErrorMessage: "",
-// 	}
-
-// 	return http.StatusOK, &response
-// }
+	return res, nil
+}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -174,6 +176,11 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterR
 		return fmt.Errorf("role is required")
 	}
 
+	allowedRoles := map[string]bool{"supporter": true, "coordinator": true}
+	if !allowedRoles[req.Role] {
+		return fmt.Errorf("role is invalid")
+	}
+
 	if req.FullName == "" {
 		return fmt.Errorf("full name is required")
 	}
@@ -184,6 +191,10 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterR
 
 	if req.Phone == "" {
 		return fmt.Errorf("phone is required")
+	}
+
+	if !regexp.MustCompile(`^\d+$`).MatchString(req.Phone) {
+		return fmt.Errorf("phone must contain only numeric characters")
 	}
 
 	if len(req.Phone) < 10 || len(req.Phone) > 18 {
@@ -219,7 +230,8 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 		"exp":     time.Now().Add(time.Hour * 1).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte("hacktiv8p3gc2"))
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	tokenString, err := token.SignedString([]byte(jwtSecretKey))
 
 	if err != nil {
 		log.Println(err)

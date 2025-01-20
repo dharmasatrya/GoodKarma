@@ -85,3 +85,20 @@ func (us *userController) Login(c echo.Context) error {
 		Data:    result,
 	})
 }
+
+func (us *userController) GetUserById(c echo.Context) error {
+	id := c.Param("id")
+
+	result, err := us.userService.GetUserById(id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, entity.ResponseOK{
+		Message: "User found",
+		Data:    result,
+	})
+}
