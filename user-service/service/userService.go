@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -174,6 +175,11 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterR
 		return fmt.Errorf("role is required")
 	}
 
+	allowedRoles := map[string]bool{"supporter": true, "coordinator": true}
+	if !allowedRoles[req.Role] {
+		return fmt.Errorf("role is invalid")
+	}
+
 	if req.FullName == "" {
 		return fmt.Errorf("full name is required")
 	}
@@ -184,6 +190,10 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterR
 
 	if req.Phone == "" {
 		return fmt.Errorf("phone is required")
+	}
+
+	if !regexp.MustCompile(`^\d+$`).MatchString(req.Phone) {
+		return fmt.Errorf("phone must contain only numeric characters")
 	}
 
 	if len(req.Phone) < 10 || len(req.Phone) > 18 {

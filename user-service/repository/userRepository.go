@@ -35,10 +35,6 @@ func (ur *userRepository) GetProfileCollection() *mongo.Collection {
 	return ur.db.Collection("profiles")
 }
 
-func (ur *userRepository) GetWalletCollection() *mongo.Collection {
-	return ur.db.Collection("wallets")
-}
-
 func NewUserRepository(DB *mongo.Database) UserRepository {
 	return &userRepository{
 		db: DB,
@@ -164,6 +160,7 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 	profileCollection := ur.GetProfileCollection()
 
 	var user entity.DetailUser
+	var profile entity.Profile
 
 	userID, err := primitive.ObjectIDFromHex(id)
 
@@ -179,8 +176,6 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 		}
 		return nil, err
 	}
-
-	var profile entity.Profile
 
 	err = profileCollection.FindOne(context.Background(), primitive.M{"user_id": userID}).Decode(&profile)
 
