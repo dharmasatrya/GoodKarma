@@ -39,13 +39,14 @@ func (h *eventController) CreateEvent(c echo.Context) error {
 }
 
 func (h *eventController) EditEvent(c echo.Context) error {
-	var req dto.EventRequest
+	var req dto.UpdateDescriptionRequest
 
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.EditEvent(req)
+	id := c.Param("id")
+	status, response := h.eventService.EditEvent(id, req)
 
 	return c.JSON(status, response)
 }
@@ -57,7 +58,7 @@ func (h *eventController) GetAllEvents(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.GetAllEvent()
+	status, response := h.eventService.GetAllEvents()
 
 	return c.JSON(status, response)
 }
@@ -75,23 +76,29 @@ func (h *eventController) GetEventById(c echo.Context) error {
 	return c.JSON(status, response)
 }
 
-func (h *eventController) GetEventByUserLogin(c echo.Context) error {
+func (h *eventController) GetAllEventByUserLogin(c echo.Context) error {
 	var req dto.EventRequest
 
-	user_id := c.Param("id")
+	user_id := "useridmongo"
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.GetEventByUserId(user_id)
+	status, response := h.eventService.GetEventByUserLogin(user_id)
 
 	return c.JSON(status, response)
 }
 
-func (h *eventController) GetEventByCategory(c echo.Context) error {
+func (h *eventController) GetAllEventByCategory(c echo.Context) error {
 	var req dto.EventRequest
 
-	id := c.Param("category")
+	category := c.QueryParam("category")
+
+	// Jika kategori tidak diberikan, alihkan ke handler lain atau kirimkan error
+	if category == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid category param") // Memanggil rute lainnya yang mengambil semua events
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}

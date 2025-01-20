@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"goodkarma-event-service/entity"
+	"github.com/dharmasatrya/goodkarma/event-service/entity"
 
 	"gorm.io/gorm" // ORM (Object Relational Mapping) Gorm untuk interaksi dengan database.
 )
@@ -11,7 +11,7 @@ type EventRepository interface {
 	EditDescription(id int, description string) (*entity.Event, error)
 	GetAllEvents() (*[]entity.Event, error)
 	GetEventById(id int) (*entity.Event, error)
-	GetEventsByUserId(id int) (*[]entity.Event, error)
+	GetEventsByUserId(id string) (*[]entity.Event, error)
 	GetEventsByCategory(category string) (*[]entity.Event, error)
 }
 
@@ -68,7 +68,7 @@ func (r *eventRepository) GetEventById(id int) (*entity.Event, error) {
 	return &event, nil
 }
 
-func (r *eventRepository) GetEventsByUserId(id int) (*[]entity.Event, error) {
+func (r *eventRepository) GetEventsByUserId(id string) (*[]entity.Event, error) {
 	var event []entity.Event
 	if err := r.db.Where("user_id = ?", id).Find(&event).Error; err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (r *eventRepository) GetEventsByUserId(id int) (*[]entity.Event, error) {
 func (r *eventRepository) GetEventsByCategory(category string) (*[]entity.Event, error) {
 	var event []entity.Event
 	query := "%" + category + "%"
-	if err := r.db.Where("category LIKE ?", query).Find(&event).Error; err != nil {
+	if err := r.db.Where("donation_type LIKE ?", query).Find(&event).Error; err != nil {
 		return nil, err
 	}
 
