@@ -19,8 +19,7 @@ func CreateXenditInvoice(req entity.XenditInvoiceRequest) (*entity.XenditInvoice
 		"amount":      req.Amount,
 		"description": req.Description,
 		"customer": map[string]interface{}{
-			"given_names":   req.FirstName,
-			"surname":       req.LastName,
+			"given_names":   req.Name,
 			"email":         req.Email,
 			"mobile_number": req.Phone,
 		},
@@ -99,18 +98,21 @@ func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) 
 	// Convert payload to JSON
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		fmt.Println("101")
 		return fmt.Errorf("error marshaling JSON: %v", err)
 	}
 
 	// Create the request
 	request, err := http.NewRequest("POST", xenditUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Println("107")
 		return fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Get API key from environment variable and encode it
 	apiKey := os.Getenv("XENDIT_API_KEY")
 	if apiKey == "" {
+		fmt.Println("113")
 		return fmt.Errorf("XENDIT_API_KEY not found in environment variables")
 	}
 	encodedKey := base64.StdEncoding.EncodeToString([]byte(apiKey))
@@ -123,6 +125,7 @@ func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) 
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
+		fmt.Println("125")
 		return fmt.Errorf("error making request: %v", err)
 	}
 	defer resp.Body.Close()
@@ -130,11 +133,13 @@ func CreateXenditDisbursement(disbursementReq entity.XenditDisbursementRequest) 
 	// Parse the response
 	var result map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		fmt.Println("136")
 		return fmt.Errorf("error decoding response: %v", err)
 	}
 
 	// Check if response indicates an error
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		fmt.Println(result)
 		return fmt.Errorf("API request failed with status %d: %v", resp.StatusCode, result)
 	}
 

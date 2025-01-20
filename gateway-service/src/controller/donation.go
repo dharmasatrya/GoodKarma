@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"gateway-service/dto"
 	"gateway-service/src/service"
 	"net/http"
@@ -37,6 +38,7 @@ func (h *donationController) CreateDonation(c echo.Context) error {
 	}
 
 	if err := c.Bind(&req); err != nil {
+		fmt.Println(err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 

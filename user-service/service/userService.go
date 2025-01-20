@@ -230,9 +230,9 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 		"exp":     time.Now().Add(time.Hour * 1).Unix(),
 	})
 
+
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 	tokenString, err := token.SignedString([]byte(jwtSecretKey))
-
 	if err != nil {
 		log.Println(err)
 		return "", err

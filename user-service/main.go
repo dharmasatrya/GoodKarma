@@ -17,7 +17,7 @@ import (
 func main() {
 	godotenv.Load()
 
-	listen, err := net.Listen("tcp", ":50052")
+	listen, err := net.Listen("tcp", ":50051")
 
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -36,7 +36,7 @@ func main() {
 
 	pb.RegisterUserServiceServer(server, userService)
 
-	log.Println("Server is running on port: 50052")
+	log.Println("Server is running on port: 50051")
 
 	if err := server.Serve(listen); err != nil {
 		log.Fatalf("Failed to serve: %v", err)

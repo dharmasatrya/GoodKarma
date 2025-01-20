@@ -3,12 +3,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 	"github.com/dharmasatrya/goodkarma/payment-service/external"
 	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
 	"github.com/dharmasatrya/goodkarma/user-service/proto"
+	"github.com/google/uuid"
 
 	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
@@ -109,6 +111,7 @@ func (s *PaymentService) UpdateWalletBalance(ctx context.Context, req *pb.Update
 	// Get claims from context that was set in auth middleware
 	claims, ok := ctx.Value("claims").(jwt.MapClaims)
 	if !ok {
+		fmt.Printf("Claims type: %T\n", ctx.Value("claims"))
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
@@ -146,12 +149,29 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
+	// Get claims from context that was set in auth middleware
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		fmt.Printf("Claims type: %T\n", ctx.Value("claims"))
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
+	}
+
+	// Extract user_id from claims
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
+	userDetail, errUser := s.userClient.Client.GetUserById(ctx, &proto.GetUserByIdRequest{Id: userID})
+	if errUser != nil {
+		return nil, status.Errorf(codes.Internal, "cant get user detail")
+	}
+
 	invoice := entity.XenditInvoiceRequest{
-		ExternalId:  "111",
+		ExternalId:  "goodkarma" + uuid.New().String(),
 		Amount:      int(req.Amount),
 		Description: req.Description,
-		FirstName:   "a",
-		LastName:    "a",
+		Name:        userDetail.FullName,
 		Email:       "dharmasatrya10@gmail.com",
 		Phone:       "081299640904",
 	}
@@ -185,8 +205,11 @@ func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) 
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
 	}
 
+	fmt.Println(userID)
+
 	wallet, errWallet := s.paymentRepository.GetWalletByUserId(ctx, userID)
 	if errWallet != nil {
+		fmt.Println(errWallet)
 		return nil, status.Errorf(codes.InvalidArgument, "Cant find wallet")
 	}
 
@@ -200,12 +223,15 @@ func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) 
 		return nil, status.Errorf(codes.Internal, "cant get user detail")
 	}
 
+	fmt.Println(req.Amount, "aiJDOAISJODIJASOODSAJ")
+
 	disbursement := entity.XenditDisbursementRequest{
 		ExternalId:        "111",
 		Amount:            int(req.Amount),
 		BankCode:          wallet.BankCode,
 		AccountHolderName: wallet.BankAccountName,
 		Description:       "withdraw funds from GoodKarma",
+		BankAccountNumber: wallet.BankAccountNumber,
 		Email:             userDetail.Email,
 	}
 

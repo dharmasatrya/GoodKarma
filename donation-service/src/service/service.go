@@ -4,10 +4,14 @@ package service
 import (
 	"context"
 
+	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/entity"
 	"github.com/dharmasatrya/goodkarma/donation-service/src/repository"
+	"github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
+
+	"github.com/google/uuid"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,19 +23,20 @@ import (
 type DonationService struct {
 	pb.UnimplementedDonationServiceServer
 	donationRepository repository.DonationRepository
+	paymentClient      *client.PaymentServiceClient
 }
 
 // var jwtSecret = []byte("secret")
 
-func NewDonationService(donationRepository repository.DonationRepository) *DonationService {
+func NewDonationService(donationRepository repository.DonationRepository, paymentClient *client.PaymentServiceClient) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
+		paymentClient:      paymentClient,
 	}
 }
 
 func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDonationRequest) (*pb.CreateDonationResponse, error) {
-
-	_, ok := metadata.FromIncomingContext(ctx)
+	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
@@ -55,6 +60,30 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 		Amount:       req.Amount,
 		Status:       req.Status,
 		DonationType: req.DonationType,
+	}
+
+	if req.DonationType == "uang" {
+		// Forward the authorization token to payment service
+		token := md.Get("authorization")
+		if len(token) > 0 {
+			// Create new outgoing context with the token
+			outgoingMD := metadata.New(map[string]string{
+				"authorization": token[0],
+			})
+			outgoingCtx := metadata.NewOutgoingContext(ctx, outgoingMD)
+
+			// Use the new context for the payment service call
+			_, err := s.paymentClient.Client.CreateInvoice(outgoingCtx, &proto.CreateInvoiceRequest{
+				UserId:      userID,
+				ExternalId:  "goodkarma" + uuid.New().String(),
+				Amount:      req.Amount,
+				Description: "Goodkarma donation",
+			})
+
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, "failed to create invoice")
+			}
+		}
 	}
 
 	res, err := s.donationRepository.CreateDonation(donation)
@@ -116,13 +145,12 @@ func (s *DonationService) GetDonationsByUserId(ctx context.Context, req *pb.GetD
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
-	// Verify that the requested user_id matches the token's user_id
 	userID, ok := claims["user_id"].(string)
-	if !ok || userID != req.UserId {
+	if !ok {
 		return nil, status.Errorf(codes.PermissionDenied, "unauthorized to access this user's donations")
 	}
 
-	donations, err := s.donationRepository.GetDonationsByUserId(req.UserId)
+	donations, err := s.donationRepository.GetDonationsByUserId(userID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error fetching donations: %v", err)
 	}

@@ -70,12 +70,10 @@ func NewRouter() *echo.Echo {
 	// }
 
 	donation := e.Group("/donations")
-	{
-		donation.POST("", donationController.CreateDonation)
-		donation.PUT("/:id", donationController.UpdateDonationStatus)
-		donation.GET("", donationController.GetAllDonationByUser)
-		donation.GET("/:id", donationController.GetAllDonationByEventId)
-	}
+	donation.POST("", donationController.CreateDonation)
+	donation.PUT("/:id", donationController.UpdateDonationStatus)
+	donation.GET("", donationController.GetAllDonationByUser)
+	donation.GET("/:event_id", donationController.GetAllDonationByEventId)
 
 	payment := e.Group("/payments")
 	payment.GET("/wallets", paymentController.GetWalletByUserId)
