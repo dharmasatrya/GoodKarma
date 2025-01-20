@@ -8,6 +8,7 @@ import (
 	"os"
 
 	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -27,7 +28,10 @@ func NewPaymentService(paymentClient pb.PaymentServiceClient) *paymentService {
 }
 
 func (u *paymentService) Withdraw(token string, input dto.WithdrawRequest) (int, *dto.WithdrawResponse) {
-	res, err := u.Client.Withdraw(context.Background(), &pb.WithdrawRequest{})
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := u.Client.Withdraw(ctx, &pb.WithdrawRequest{})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
@@ -40,7 +44,10 @@ func (u *paymentService) Withdraw(token string, input dto.WithdrawRequest) (int,
 }
 
 func (u *paymentService) CreateInvoice(token string, input dto.CreateInvoiceRequest) (int, *dto.CreateInvoiceResponse) {
-	res, err := u.Client.CreateInvoice(context.Background(), &pb.CreateInvoiceRequest{})
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	res, err := u.Client.CreateInvoice(ctx, &pb.CreateInvoiceRequest{})
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}
