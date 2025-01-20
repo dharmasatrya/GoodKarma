@@ -25,7 +25,7 @@ func NewUserService(userRepository repository.UserRepository) *UserService {
 }
 
 func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUserSupporterRequest) (*pb.CreateUserSupporterResponse, error) {
-	payload := entity.CreateUserRequest{
+	payload := entity.CreateUserSupporterRequest{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -52,7 +52,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 }
 
 func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.CreateUserCoordinatorRequest) (*pb.CreateUserCoordinatorResponse, error) {
-	payload := entity.CreateMerchantRequest{
+	payload := entity.CreateUserCoordinatorRequest{
 		Username:          req.Username,
 		Email:             req.Email,
 		Password:          req.Password,
@@ -66,7 +66,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		BankAccountNumber: req.BankAccountNumber,
 	}
 
-	reqUser := entity.CreateUserRequest{
+	reqUser := entity.CreateUserSupporterRequest{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -77,7 +77,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		Photo:    req.Photo,
 	}
 
-	reqBank := entity.CreateMerchantRequest{
+	reqBank := entity.CreateUserCoordinatorRequest{
 		AccountHolderName: req.AccountHolderName,
 		BankCode:          req.BankCode,
 		BankAccountNumber: req.BankAccountNumber,
@@ -145,7 +145,7 @@ func (us *UserService) GetUserById(ctx context.Context, req *pb.GetUserByIdReque
 	}, nil
 }
 
-func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) error {
+func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterRequest) error {
 	if req.Username == "" {
 		return fmt.Errorf("username is required")
 	}
@@ -197,7 +197,7 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserRequest) e
 	return nil
 }
 
-func (us *UserService) validateBankRequest(req entity.CreateMerchantRequest) error {
+func (us *UserService) validateBankRequest(req entity.CreateUserCoordinatorRequest) error {
 	if req.AccountHolderName == "" {
 		return fmt.Errorf("account holder name is required")
 	}

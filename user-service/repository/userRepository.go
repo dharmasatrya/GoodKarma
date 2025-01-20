@@ -17,8 +17,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(entity.CreateUserRequest) (*entity.User, error)
-	CreateMerchant(entity.CreateMerchantRequest) (*entity.User, error)
+	CreateUser(entity.CreateUserSupporterRequest) (*entity.User, error)
+	CreateMerchant(entity.CreateUserCoordinatorRequest) (*entity.User, error)
 	Login(entity.LoginRequest) (*entity.User, error)
 	GetUserById(string) (*entity.DetailUser, error)
 }
@@ -45,7 +45,7 @@ func NewUserRepository(DB *mongo.Database) UserRepository {
 	}
 }
 
-func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.User, error) {
+func (ur *userRepository) CreateUser(request entity.CreateUserSupporterRequest) (*entity.User, error) {
 	userCollection := ur.GetUserCollection()
 	profileCollection := ur.GetProfileCollection()
 
@@ -91,10 +91,10 @@ func (ur *userRepository) CreateUser(request entity.CreateUserRequest) (*entity.
 	return &newUser, nil
 }
 
-func (ur *userRepository) CreateMerchant(request entity.CreateMerchantRequest) (*entity.User, error) {
-	var user *entity.CreateUserRequest
+func (ur *userRepository) CreateMerchant(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
+	var user *entity.CreateUserSupporterRequest
 
-	user = &entity.CreateUserRequest{
+	user = &entity.CreateUserSupporterRequest{
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
@@ -196,7 +196,7 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 	return &user, nil
 }
 
-func (ur *userRepository) validateCreateUser(request entity.CreateUserRequest) error {
+func (ur *userRepository) validateCreateUser(request entity.CreateUserSupporterRequest) error {
 	userCollection := ur.GetUserCollection()
 
 	if checkUsername, _ := userCollection.CountDocuments(context.Background(), primitive.M{"username": request.Username}); checkUsername > 0 {
