@@ -30,6 +30,10 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
+	if err := validateCreateEventRequest(req); err != nil {
+		return nil, err
+	}
+
 	event := entity.Event{
 		UserID:       req.UserId,
 		Name:         req.Name,
@@ -114,6 +118,9 @@ func (s *EventService) GetAllEvent(ctx context.Context, req *pb.Empty) (*pb.Even
 
 func (s *EventService) GetEventById(ctx context.Context, req *pb.Id) (*pb.EventResponse, error) {
 	id, err := strconv.Atoi(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error: id is not integer")
+	}
 
 	event, err := s.eventRepository.GetEventById(id)
 	if err != nil {
@@ -180,4 +187,47 @@ func (s *EventService) GetEventByCategory(ctx context.Context, req *pb.Category)
 	return &pb.EventListResponse{
 		Events: eventResponses,
 	}, nil
+}
+
+func validateCreateEventRequest(req *pb.EventRequest) error {
+	dateStart := helpers.ParseDate(req.DateStart)
+	dateEnd := helpers.ParseDate(req.DateEnd)
+
+	if req.UserId == "" {
+		return status.Error(codes.InvalidArgument, "user id is required")
+	}
+
+	if req.Name == "" {
+		return status.Error(codes.InvalidArgument, "name is required")
+	}
+
+	if len(req.Name) < 10 {
+		return status.Error(codes.InvalidArgument, "event name must be at least 10 characters")
+	}
+
+	if req.Description == "" {
+		return status.Error(codes.InvalidArgument, "description is required")
+	}
+
+	if len(req.Description) < 20 {
+		return status.Error(codes.InvalidArgument, "event description must be at least 20 characters")
+	}
+
+	if req.DateStart == "" {
+		return status.Error(codes.InvalidArgument, "date start is required")
+	}
+
+	if req.DateEnd == "" {
+		return status.Error(codes.InvalidArgument, "date end is required")
+	}
+
+	if dateEnd.Before(dateStart) {
+		return status.Error(codes.InvalidArgument, "date end must be after date start")
+	}
+
+	if req.DonationType == "" {
+		return status.Error(codes.InvalidArgument, "donation type is required")
+	}
+
+	return nil
 }
