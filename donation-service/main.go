@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/middleware"
+	"github.com/joho/godotenv"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/config"
 	"github.com/dharmasatrya/goodkarma/donation-service/src/repository"
@@ -23,6 +25,11 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
+	err1 := godotenv.Load()
+	if err1 != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
 	)
@@ -31,6 +38,7 @@ func main() {
 
 	db, err := config.ConnectionDB(context.Background())
 	if err != nil {
+		fmt.Println(err)
 		log.Fatalf("Error connecting to db")
 	}
 

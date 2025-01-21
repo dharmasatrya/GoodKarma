@@ -11,14 +11,20 @@ import (
 )
 
 func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
-	// mongoURI := os.Getenv("MONGODB_URI")
-	// if mongoURI == "" {
-	// 	mongoURI = "mongodb://mongodb-goodkarma:27017"
-	// }
+	// Get environment variables
+	mongoURI := os.Getenv("MONGO_URI")
+	dbName := os.Getenv("MONGO_DATABASE")
+	collectionName := os.Getenv("MONGO_COLLECTION")
 
-	mongoURI := os.Getenv("MONGODB_URI")
+	// Validate required environment variables
 	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017"
+		mongoURI = "mongodb://mongodb:27017" // default for local development
+	}
+	if dbName == "" {
+		return nil, fmt.Errorf("MONGODB_DATABASE environment variable is not set")
+	}
+	if collectionName == "" {
+		return nil, fmt.Errorf("MONGODB_COLLECTION environment variable is not set")
 	}
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -35,8 +41,8 @@ func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %v", err)
 	}
 
-	collection := client.Database("goodkarma").Collection("donation")
-	fmt.Println("Successfully connected to MongoDB")
+	collection := client.Database(dbName).Collection(collectionName)
+	fmt.Printf("Successfully connected to MongoDB: database=%s, collection=%s\n", dbName, collectionName)
 
 	return collection, nil
 }

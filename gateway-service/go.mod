@@ -4,7 +4,7 @@ go 1.23.2
 
 require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-20250120163630-0be5ef3fd993
-	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/event-service v0.0.0-20250121145618-4bde49687e02
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v5 v5.2.1
