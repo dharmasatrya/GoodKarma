@@ -7,6 +7,7 @@ option go_package = "github.com/dharmasatrya/goodkarma/donation-service/proto";
 service DonationService {
     rpc CreateDonation (CreateDonationRequest) returns (CreateDonationResponse);
     rpc UpdateDonationStatus (UpdateDonationStatusRequest) returns (UpdateDonationStatusResponse);
+    rpc UpdateDonationStatusXendit (UpdateDonationStatusRequest) returns (UpdateDonationStatusResponse);
     rpc GetDonationsByUserId (GetDonationsByUserIdRequest) returns (GetDonationsByUserIdResponse);
     rpc GetDonationsByEventId (GetDonationsByEventIdRequest) returns (GetDonationsByEventIdResponse);
 }

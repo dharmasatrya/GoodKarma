@@ -21,6 +21,12 @@ type UpdateWalletBalanceRequest struct {
 	Type   string `json:"type" bson:"type"` //MONEYIN or MONEYOUT
 }
 
+type UpdateInvoiceBalanceRequest struct {
+	Amount     uint32 `json:"amount" bson:"amount"`
+	Type       string `json:"type" bson:"type"` //MONEYIN or MONEYOUT
+	DonationID string `json:"donation_id" bson:"donation_id"`
+}
+
 type WithdrawRequest struct {
 	Amount uint32 `json:"amount" bson:"amount"`
 }

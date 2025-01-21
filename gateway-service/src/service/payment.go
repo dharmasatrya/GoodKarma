@@ -18,6 +18,7 @@ type PaymentService interface {
 	CreateInvoice(token string, input dto.CreateInvoiceRequest) (int, *dto.CreateInvoiceResponse)
 	UpdateWalletBalance(callbackToken string, input dto.UpdateWalletBalanceRequest) (int, *dto.Wallet)
 	GetWalletByUserId(token string) (int, *dto.Wallet)
+	UpdateInvoiceWalletBalance(callbackToken string, input dto.UpdateInvoiceBalanceRequest) (int, *dto.Donation)
 }
 
 type paymentService struct {
@@ -85,6 +86,35 @@ func (u *paymentService) UpdateWalletBalance(callbackToken string, input dto.Upd
 		BankCode:          res.BankCode,
 		BankAccountNumber: res.BankAccountNumber,
 		Amount:            res.Amount,
+	}
+
+	return http.StatusOK, &response
+}
+
+func (u *paymentService) UpdateInvoiceWalletBalance(callbackToken string, input dto.UpdateInvoiceBalanceRequest) (int, *dto.Donation) {
+
+	expectedToken := os.Getenv("XENDIT_CALLBACK_TOKEN")
+	if callbackToken != expectedToken {
+		fmt.Println(callbackToken, "<<<<", expectedToken)
+		return http.StatusForbidden, nil
+	}
+
+	res, err := u.Client.XenditInvoiceCallback(context.Background(), &pb.XenditInvoiceCallbackRequest{
+		Amount:     input.Amount,
+		Type:       input.Type,
+		DonationId: input.DonationID,
+	})
+	if err != nil {
+		log.Fatalf("error while create request %v", err)
+	}
+
+	response := dto.Donation{
+		ID:           res.Id,
+		UserID:       res.UserId,
+		EventID:      res.EventId,
+		Amount:       res.Amount,
+		Status:       res.Status,
+		DonationType: res.DonationType,
 	}
 
 	return http.StatusOK, &response

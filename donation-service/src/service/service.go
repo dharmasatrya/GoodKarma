@@ -11,8 +11,6 @@ import (
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 
-	"github.com/google/uuid"
-
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
@@ -62,6 +60,11 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 		DonationType: req.DonationType,
 	}
 
+	res, err := s.donationRepository.CreateDonation(donation)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error creating wallet")
+	}
+
 	if req.DonationType == "uang" {
 		// Forward the authorization token to payment service
 		token := md.Get("authorization")
@@ -75,7 +78,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 			// Use the new context for the payment service call
 			_, err := s.paymentClient.Client.CreateInvoice(outgoingCtx, &proto.CreateInvoiceRequest{
 				UserId:      userID,
-				ExternalId:  "goodkarma" + uuid.New().String(),
+				ExternalId:  res.ID.Hex(),
 				Amount:      req.Amount,
 				Description: "Goodkarma donation",
 			})
@@ -84,11 +87,6 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 				return nil, status.Errorf(codes.Internal, "failed to create invoice")
 			}
 		}
-	}
-
-	res, err := s.donationRepository.CreateDonation(donation)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating wallet")
 	}
 
 	return &pb.CreateDonationResponse{
@@ -108,6 +106,32 @@ func (s *DonationService) UpdateDonationStatus(ctx context.Context, req *pb.Upda
 	}
 
 	// Convert string ID to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid donation ID format")
+	}
+
+	donation := entity.Donation{
+		ID:     objectID,
+		Status: req.Status,
+	}
+
+	updatedDonation, err := s.donationRepository.UpdateDonationStatus(donation)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating donation status: %v", err)
+	}
+
+	return &pb.UpdateDonationStatusResponse{
+		Id:           updatedDonation.ID.Hex(),
+		UserId:       updatedDonation.UserID,
+		EventId:      updatedDonation.EventID,
+		Amount:       updatedDonation.Amount,
+		Status:       updatedDonation.Status,
+		DonationType: updatedDonation.DonationType,
+	}, nil
+}
+
+func (s *DonationService) UpdateDonationStatusXendit(ctx context.Context, req *pb.UpdateDonationStatusRequest) (*pb.UpdateDonationStatusResponse, error) {
 	objectID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid donation ID format")
