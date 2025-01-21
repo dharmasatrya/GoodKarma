@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -44,17 +45,19 @@ func (r *eventRepository) CreateEvent(event entity.Event) (*entity.Event, error)
 }
 
 func (r *eventRepository) EditDescription(id int, description string) (*entity.Event, error) {
-	// Increment the balance
-	if err := r.db.Model(&entity.Event{}).
+	result := r.db.Model(&entity.Event{}).
 		Where("id = ?", id).
-		Update("description", gorm.Expr("?", description)).Error; err != nil {
-		return nil, err
+		Update("description", gorm.Expr("?", description))
+
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	// Retrieve the updated user
 	var updatedEvent entity.Event
-
 	if err := r.db.Where("id = ?", id).First(&updatedEvent).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("event with id %d not found: %w", id, err)
+		}
 		return nil, err
 	}
 
@@ -72,7 +75,7 @@ func (r *eventRepository) GetAllEvents() (*[]entity.Event, error) {
 
 func (r *eventRepository) GetEventById(id int) (*entity.Event, error) {
 	var event entity.Event
-	if err := r.db.Where("id = ?", id).Find(&event).Error; err != nil {
+	if err := r.db.Where("id = ?", id).First(&event).Error; err != nil {
 		return nil, err
 	}
 

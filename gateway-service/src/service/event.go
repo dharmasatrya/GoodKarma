@@ -6,7 +6,6 @@ import (
 	"gateway-service/helpers"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
@@ -25,9 +24,9 @@ func parseDate(dateStr string) time.Time {
 
 type EventService interface {
 	CreateEvent(token string, input dto.EventRequest) (int, *dto.Event, error)
-	EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event)
+	EditEvent(token string, id int, input dto.UpdateDescriptionRequest) (int, *dto.Event)
 	GetAllEvents() (int, *[]dto.Event)
-	GetEventById(id string) (int, *dto.Event)
+	GetEventById(id int) (int, *dto.Event)
 	GetEventByUserLogin(token string) (int, *[]dto.Event)
 	GetEventByCategory(category string) (int, *[]dto.Event)
 }
@@ -65,11 +64,6 @@ func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *
 		return http.StatusInternalServerError, nil, err
 	}
 
-	id, err := strconv.Atoi(res.Id)
-	if err != nil {
-		log.Printf("error convert response.Id to integer %v", err)
-	}
-
 	const layout = "2006-01-02" // Matches dates like "2024-01-01"
 	dateStart, err := time.Parse(layout, res.DateStart)
 	if err != nil {
@@ -82,7 +76,7 @@ func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *
 	}
 
 	response := dto.Event{
-		ID:           id,
+		ID:           int(res.Id),
 		UserID:       res.UserId,
 		Name:         res.Name,
 		Description:  res.Description,
@@ -94,7 +88,7 @@ func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *
 	return http.StatusCreated, &response, nil
 }
 
-func (s *eventService) EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event) {
+func (s *eventService) EditEvent(token string, id int, input dto.UpdateDescriptionRequest) (int, *dto.Event) {
 	ctx, cancel, err := helpers.NewServiceContext(token)
 	if err != nil {
 		log.Printf("Error creating context %v", err)
@@ -102,21 +96,18 @@ func (s *eventService) EditEvent(token string, id string, input dto.UpdateDescri
 	}
 	defer cancel()
 
-	res, err := s.Client.UpdateDescription(ctx, &pb.UpdateDescriptionRequest{Id: id, Description: input.Description})
+	res, err := s.Client.UpdateDescription(ctx, &pb.UpdateDescriptionRequest{Id: uint32(id), Description: input.Description})
 	if err != nil {
-		log.Printf("error while create request %v", err)
-	}
-
-	idInt, err := strconv.Atoi(res.Id)
-	if err != nil {
-		log.Printf("error convert response.Id to integer %v", err)
+		log.Printf("Error updating desciprtion: %v", err)
+		status := helpers.AssertGrpcStatus(err)
+		return status, nil
 	}
 
 	dateStart := parseDate(res.DateStart)
 	dateEnd := parseDate(res.DateEnd)
 
 	response := dto.Event{
-		ID:           idInt,
+		ID:           int(res.Id),
 		UserID:       res.UserId,
 		Name:         res.Name,
 		Description:  res.Description,
@@ -125,35 +116,31 @@ func (s *eventService) EditEvent(token string, id string, input dto.UpdateDescri
 		DonationType: res.DonationType,
 	}
 
-	return http.StatusCreated, &response
+	return http.StatusOK, &response
 }
 
 func (s *eventService) GetAllEvents() (int, *[]dto.Event) {
 	ctx, cancel, err := helpers.NewServiceWithoutTokenContext()
 	if err != nil {
-		log.Printf("Error creating context %v", err)
+		log.Printf("Error updating desciprtion: %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
 	res, err := s.Client.GetAllEvent(ctx, &pb.Empty{})
 	if err != nil {
-		log.Printf("error while creating request: %v", err)
-		return http.StatusInternalServerError, nil
+		log.Printf("Error get all events: %v", err)
+		status := helpers.AssertGrpcStatus(err)
+		return status, nil
 	}
 
 	var events []dto.Event
 	for _, event := range res.Events {
-		id, err := strconv.Atoi(event.Id)
-		if err != nil {
-			log.Printf("error convert response.Id to integer %v", err)
-		}
-
 		dateStart := parseDate(event.DateStart)
 		dateEnd := parseDate(event.DateEnd)
 
 		events = append(events, dto.Event{
-			ID:           id,
+			ID:           int(event.Id),
 			UserID:       event.UserId,
 			Name:         event.Name,
 			Description:  event.Description,
@@ -166,29 +153,25 @@ func (s *eventService) GetAllEvents() (int, *[]dto.Event) {
 	return http.StatusOK, &events
 }
 
-func (s *eventService) GetEventById(id string) (int, *dto.Event) {
+func (s *eventService) GetEventById(id int) (int, *dto.Event) {
 	ctx, cancel, err := helpers.NewServiceWithoutTokenContext()
 	if err != nil {
-		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
-	res, err := s.Client.GetEventById(ctx, &pb.Id{Id: id})
+	res, err := s.Client.GetEventById(ctx, &pb.Id{Id: uint32(id)})
 	if err != nil {
-		log.Printf("error while create request %v", err)
+		log.Printf("Error get event by id: %v", err)
+		status := helpers.AssertGrpcStatus(err)
+		return status, nil
 	}
 
 	dateStart := parseDate(res.DateStart)
 	dateEnd := parseDate(res.DateEnd)
 
-	idInt, err := strconv.Atoi(id)
-	if err != nil {
-		log.Printf("error convert id string %v", err)
-	}
-
 	response := dto.Event{
-		ID:           idInt,
+		ID:           id,
 		UserID:       res.UserId,
 		Name:         res.Name,
 		Description:  res.Description,
@@ -197,7 +180,7 @@ func (s *eventService) GetEventById(id string) (int, *dto.Event) {
 		DonationType: res.DonationType,
 	}
 
-	return http.StatusCreated, &response
+	return http.StatusOK, &response
 }
 
 func (s *eventService) GetEventByUserLogin(token string) (int, *[]dto.Event) {
@@ -211,22 +194,18 @@ func (s *eventService) GetEventByUserLogin(token string) (int, *[]dto.Event) {
 	res, err := s.Client.GetEventByUserId(ctx, &pb.Empty{})
 
 	if err != nil {
-		log.Printf("error while creating request: %v", err)
-		return http.StatusInternalServerError, nil
+		log.Printf("Error get event by user id: %v", err)
+		status := helpers.AssertGrpcStatus(err)
+		return status, nil
 	}
 
 	var events []dto.Event
 	for _, event := range res.Events {
-		id, err := strconv.Atoi(event.Id)
-		if err != nil {
-			log.Printf("error convert response.Id to integer %v", err)
-		}
-
 		dateStart := parseDate(event.DateStart)
 		dateEnd := parseDate(event.DateEnd)
 
 		events = append(events, dto.Event{
-			ID:           id,
+			ID:           int(event.Id),
 			UserID:       event.UserId,
 			Name:         event.Name,
 			Description:  event.Description,
@@ -251,22 +230,18 @@ func (s *eventService) GetEventByCategory(category string) (int, *[]dto.Event) {
 		Category: category,
 	})
 	if err != nil {
-		log.Printf("error while creating request: %v", err)
-		return http.StatusInternalServerError, nil
+		log.Printf("Error get event by category: %v", err)
+		status := helpers.AssertGrpcStatus(err)
+		return status, nil
 	}
 
 	var events []dto.Event
 	for _, event := range res.Events {
-		id, err := strconv.Atoi(event.Id)
-		if err != nil {
-			log.Printf("error convert response.Id to integer %v", err)
-		}
-
 		dateStart := parseDate(event.DateStart)
 		dateEnd := parseDate(event.DateEnd)
 
 		events = append(events, dto.Event{
-			ID:           id,
+			ID:           int(event.Id),
 			UserID:       event.UserId,
 			Name:         event.Name,
 			Description:  event.Description,
