@@ -9,17 +9,16 @@ service EventService {
     rpc UpdateDescription (UpdateDescriptionRequest) returns (UpdateDescriptionResponse);
     rpc GetAllEvent (Empty) returns(EventListResponse);
     rpc GetEventById (Id) returns(EventResponse);
-    rpc GetEventByUserId (UserId) returns(EventListResponse);
+    rpc GetEventByUserId (Empty) returns(EventListResponse);
     rpc GetEventByCategory (Category) returns(EventListResponse);
 }
 
 message EventRequest{
-    string user_id = 1;
-    string name = 2;
-    string description = 3;
-    string date_start = 4;
-    string date_end = 5;
-    string donation_type = 6;
+    string name = 1;
+    string description = 2;
+    string date_start = 3;
+    string date_end = 4;
+    string donation_type = 5;
 }
 
 message EventResponse {

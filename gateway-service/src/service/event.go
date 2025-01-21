@@ -16,27 +16,17 @@ func parseDate(dateStr string) time.Time {
 	const layout = "2006-01-02T15:04:05" // Adjusted to handle date, time, and timezone
 	parsedDate, err := time.Parse(layout, dateStr)
 	if err != nil {
-		log.Fatalf("Failed to parse date: %v", err)
-	}
-	return parsedDate
-}
-
-func ParseDate(dateStr string) time.Time {
-	// Adjust layout to match the input date format
-	const layout = "2006-01-02T15:04:05"
-	parsedDate, err := time.Parse(layout, dateStr)
-	if err != nil {
-		log.Fatalf("Failed to parse date: %v", err)
+		log.Printf("Failed to parse date: %v", err)
 	}
 	return parsedDate
 }
 
 type EventService interface {
-	CreateEvent(input dto.EventRequest) (int, *dto.Event)
-	EditEvent(id string, input dto.UpdateDescriptionRequest) (int, *dto.Event)
+	CreateEvent(token string, input dto.EventRequest) (int, *dto.Event)
+	EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event)
 	GetAllEvents() (int, *[]dto.Event)
 	GetEventById(id string) (int, *dto.Event)
-	GetEventByUserLogin(userID string) (int, *[]dto.Event)
+	GetEventByUserLogin(token string) (int, *[]dto.Event)
 	GetEventByCategory(category string) (int, *[]dto.Event)
 }
 
@@ -48,16 +38,15 @@ func NewEventService(eventClient pb.EventServiceClient) *eventService {
 	return &eventService{eventClient}
 }
 
-func (s *eventService) CreateEvent(input dto.EventRequest) (int, *dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *dto.Event) {
+	ctx, cancel, err := helpers.NewServiceContext(token)
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
 	res, err := s.Client.CreateEvent(ctx, &pb.EventRequest{
-		UserId:       input.UserID,
 		Name:         input.Name,
 		Description:  input.Description,
 		DateStart:    input.DateStart,
@@ -66,23 +55,23 @@ func (s *eventService) CreateEvent(input dto.EventRequest) (int, *dto.Event) {
 	})
 
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		log.Printf("error while create request %v", err)
 	}
 
 	id, err := strconv.Atoi(res.Id)
 	if err != nil {
-		log.Fatalf("error convert response.Id to integer %v", err)
+		log.Printf("error convert response.Id to integer %v", err)
 	}
 
 	const layout = "2006-01-02" // Matches dates like "2024-01-01"
 	dateStart, err := time.Parse(layout, res.DateStart)
 	if err != nil {
-		log.Fatalf("Failed to parse date: %v", err)
+		log.Printf("Failed to parse date: %v", err)
 	}
 
 	dateEnd, err := time.Parse(layout, res.DateEnd)
 	if err != nil {
-		log.Fatalf("Failed to parse date: %v", err)
+		log.Printf("Failed to parse date: %v", err)
 	}
 
 	response := dto.Event{
@@ -98,22 +87,22 @@ func (s *eventService) CreateEvent(input dto.EventRequest) (int, *dto.Event) {
 	return http.StatusCreated, &response
 }
 
-func (s *eventService) EditEvent(id string, input dto.UpdateDescriptionRequest) (int, *dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+func (s *eventService) EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event) {
+	ctx, cancel, err := helpers.NewServiceContext(token)
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
 	res, err := s.Client.UpdateDescription(ctx, &pb.UpdateDescriptionRequest{Id: id, Description: input.Description})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		log.Printf("error while create request %v", err)
 	}
 
 	idInt, err := strconv.Atoi(res.Id)
 	if err != nil {
-		log.Fatalf("error convert response.Id to integer %v", err)
+		log.Printf("error convert response.Id to integer %v", err)
 	}
 
 	dateStart := parseDate(res.DateStart)
@@ -133,9 +122,9 @@ func (s *eventService) EditEvent(id string, input dto.UpdateDescriptionRequest) 
 }
 
 func (s *eventService) GetAllEvents() (int, *[]dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+	ctx, cancel, err := helpers.NewServiceWithoutTokenContext()
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
@@ -150,7 +139,7 @@ func (s *eventService) GetAllEvents() (int, *[]dto.Event) {
 	for _, event := range res.Events {
 		id, err := strconv.Atoi(event.Id)
 		if err != nil {
-			log.Fatalf("error convert response.Id to integer %v", err)
+			log.Printf("error convert response.Id to integer %v", err)
 		}
 
 		dateStart := parseDate(event.DateStart)
@@ -171,16 +160,16 @@ func (s *eventService) GetAllEvents() (int, *[]dto.Event) {
 }
 
 func (s *eventService) GetEventById(id string) (int, *dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+	ctx, cancel, err := helpers.NewServiceWithoutTokenContext()
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
 	res, err := s.Client.GetEventById(ctx, &pb.Id{Id: id})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		log.Printf("error while create request %v", err)
 	}
 
 	dateStart := parseDate(res.DateStart)
@@ -188,7 +177,7 @@ func (s *eventService) GetEventById(id string) (int, *dto.Event) {
 
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		log.Fatalf("error convert id string %v", err)
+		log.Printf("error convert id string %v", err)
 	}
 
 	response := dto.Event{
@@ -204,17 +193,16 @@ func (s *eventService) GetEventById(id string) (int, *dto.Event) {
 	return http.StatusCreated, &response
 }
 
-func (s *eventService) GetEventByUserLogin(userID string) (int, *[]dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+func (s *eventService) GetEventByUserLogin(token string) (int, *[]dto.Event) {
+	ctx, cancel, err := helpers.NewServiceContext(token)
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
 
-	res, err := s.Client.GetEventByUserId(ctx, &pb.UserId{
-		UserId: userID,
-	})
+	res, err := s.Client.GetEventByUserId(ctx, &pb.Empty{})
+
 	if err != nil {
 		log.Printf("error while creating request: %v", err)
 		return http.StatusInternalServerError, nil
@@ -224,7 +212,7 @@ func (s *eventService) GetEventByUserLogin(userID string) (int, *[]dto.Event) {
 	for _, event := range res.Events {
 		id, err := strconv.Atoi(event.Id)
 		if err != nil {
-			log.Fatalf("error convert response.Id to integer %v", err)
+			log.Printf("error convert response.Id to integer %v", err)
 		}
 
 		dateStart := parseDate(event.DateStart)
@@ -245,9 +233,9 @@ func (s *eventService) GetEventByUserLogin(userID string) (int, *[]dto.Event) {
 }
 
 func (s *eventService) GetEventByCategory(category string) (int, *[]dto.Event) {
-	ctx, cancel, err := helpers.NewServiceContext()
+	ctx, cancel, err := helpers.NewServiceWithoutTokenContext()
 	if err != nil {
-		log.Fatalf("Error creating context %v", err)
+		log.Printf("Error creating context %v", err)
 		return http.StatusInternalServerError, nil
 	}
 	defer cancel()
@@ -264,7 +252,7 @@ func (s *eventService) GetEventByCategory(category string) (int, *[]dto.Event) {
 	for _, event := range res.Events {
 		id, err := strconv.Atoi(event.Id)
 		if err != nil {
-			log.Fatalf("error convert response.Id to integer %v", err)
+			log.Printf("error convert response.Id to integer %v", err)
 		}
 
 		dateStart := parseDate(event.DateStart)

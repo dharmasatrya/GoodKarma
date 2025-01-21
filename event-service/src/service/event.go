@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	"github.com/dharmasatrya/goodkarma/event-service/entity"
 	"github.com/dharmasatrya/goodkarma/event-service/helpers"
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
 	"github.com/dharmasatrya/goodkarma/event-service/src/repository"
+	"github.com/golang-jwt/jwt/v4"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -30,12 +32,25 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		log.Printf("Type of ctx.Value(\"claims\"): %T", ctx.Value("claims"))   // Log the type
+		log.Printf("Value of ctx.Value(\"claims\"): %+v", ctx.Value("claims")) // Log the value
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
+	}
+
+	// Proceed with claims as jwt.MapClaims
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
 	if err := validateCreateEventRequest(req); err != nil {
 		return nil, err
 	}
 
 	event := entity.Event{
-		UserID:       req.UserId,
+		UserID:       userID,
 		Name:         req.Name,
 		Description:  req.Description,
 		DateStart:    helpers.ParseDate(req.DateStart),
@@ -52,7 +67,7 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 
 	return &pb.EventResponse{
 		Id:           id,
-		UserId:       req.UserId,
+		UserId:       res.UserID,
 		Name:         req.Name,
 		Description:  req.Description,
 		DateStart:    req.DateStart,
@@ -141,8 +156,24 @@ func (s *EventService) GetEventById(ctx context.Context, req *pb.Id) (*pb.EventR
 	}, nil
 }
 
-func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.UserId) (*pb.EventListResponse, error) {
-	events, err := s.eventRepository.GetEventsByUserId(req.UserId)
+func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.Empty) (*pb.EventListResponse, error) {
+	_, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
+	}
+
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
+	}
+
+	// Proceed with claims as jwt.MapClaims
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
+	events, err := s.eventRepository.GetEventsByUserId(userID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error retrieving events: %v", err)
 	}

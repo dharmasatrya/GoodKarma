@@ -29,11 +29,18 @@ func NewEventController(eventService service.EventService) *eventController {
 func (h *eventController) CreateEvent(c echo.Context) error {
 	var req dto.EventRequest
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.CreateEvent(req)
+	status, response := h.eventService.CreateEvent(token, req)
 
 	return c.JSON(status, response)
 }
@@ -41,12 +48,19 @@ func (h *eventController) CreateEvent(c echo.Context) error {
 func (h *eventController) EditEvent(c echo.Context) error {
 	var req dto.UpdateDescriptionRequest
 
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
 	id := c.Param("id")
-	status, response := h.eventService.EditEvent(id, req)
+	status, response := h.eventService.EditEvent(token, id, req)
 
 	return c.JSON(status, response)
 }
@@ -79,12 +93,18 @@ func (h *eventController) GetEventById(c echo.Context) error {
 func (h *eventController) GetAllEventByUserLogin(c echo.Context) error {
 	var req dto.EventRequest
 
-	user_id := "useridmongo"
+	token := c.Request().Header.Get("Authorization")
+	if token == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "No token provided",
+		})
+	}
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.GetEventByUserLogin(user_id)
+	status, response := h.eventService.GetEventByUserLogin(token)
 
 	return c.JSON(status, response)
 }
