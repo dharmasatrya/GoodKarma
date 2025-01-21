@@ -7,6 +7,7 @@ import (
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/middleware"
+	"github.com/joho/godotenv"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/config"
 	"github.com/dharmasatrya/goodkarma/donation-service/src/repository"
@@ -18,6 +19,8 @@ import (
 )
 
 func main() {
+	godotenv.Load()
+
 	listen, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
