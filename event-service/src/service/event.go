@@ -60,7 +60,9 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 
 	res, err := s.eventRepository.CreateEvent(event)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating event")
+		log.Println(err)
+		return nil, err
+		// return nil, status.Errorf(codes.Internal, "error creating event")
 	}
 
 	id := strconv.Itoa(res.ID)
@@ -223,10 +225,6 @@ func (s *EventService) GetEventByCategory(ctx context.Context, req *pb.Category)
 func validateCreateEventRequest(req *pb.EventRequest) error {
 	dateStart := helpers.ParseDate(req.DateStart)
 	dateEnd := helpers.ParseDate(req.DateEnd)
-
-	if req.UserId == "" {
-		return status.Error(codes.InvalidArgument, "user id is required")
-	}
 
 	if req.Name == "" {
 		return status.Error(codes.InvalidArgument, "name is required")
