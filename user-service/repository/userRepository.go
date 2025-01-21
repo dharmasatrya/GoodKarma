@@ -21,10 +21,12 @@ type UserRepository interface {
 	CreateUserCoordinator(entity.CreateUserCoordinatorRequest) (*entity.User, error)
 	Login(entity.LoginRequest) (*entity.User, error)
 	GetUserById(string) (*entity.DetailUser, error)
+	UpdateProfile(entity.UpdateProfileRequest) (*entity.DetailUser, error)
 }
 
 type userRepository struct {
-	db *mongo.Database
+	db             *mongo.Database
+	userRepository UserRepository
 }
 
 func (ur *userRepository) GetUserCollection() *mongo.Collection {
@@ -174,6 +176,45 @@ func (ur *userRepository) GetUserById(id string) (*entity.DetailUser, error) {
 	user.Photo = profile.Photo
 
 	return &user, nil
+}
+
+func (ur *userRepository) UpdateProfile(request entity.UpdateProfileRequest) (*entity.DetailUser, error) {
+	profileCollection := ur.GetProfileCollection()
+
+	userID, err := primitive.ObjectIDFromHex(request.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ur.GetUserById(request.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	update := primitive.M{
+		"$set": primitive.M{
+			"full_name": request.FullName,
+			"address":   request.Address,
+			"phone":     request.Phone,
+			"photo":     request.Photo,
+		},
+	}
+
+	_, err = profileCollection.UpdateOne(context.Background(), primitive.M{"user_id": userID}, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := ur.GetUserById(request.UserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {

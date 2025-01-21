@@ -40,7 +40,13 @@ func (h *eventController) CreateEvent(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.CreateEvent(token, req)
+	status, response, err := h.eventService.CreateEvent(token, req)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+	}
 
 	return c.JSON(status, response)
 }
