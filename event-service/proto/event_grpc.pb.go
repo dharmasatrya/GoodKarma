@@ -25,6 +25,7 @@ const (
 	EventService_GetEventById_FullMethodName       = "/eventpb.EventService/GetEventById"
 	EventService_GetEventByUserId_FullMethodName   = "/eventpb.EventService/GetEventByUserId"
 	EventService_GetEventByCategory_FullMethodName = "/eventpb.EventService/GetEventByCategory"
+	EventService_GetUserIdById_FullMethodName      = "/eventpb.EventService/GetUserIdById"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -35,8 +36,9 @@ type EventServiceClient interface {
 	UpdateDescription(ctx context.Context, in *UpdateDescriptionRequest, opts ...grpc.CallOption) (*UpdateDescriptionResponse, error)
 	GetAllEvent(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*EventListResponse, error)
 	GetEventById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*EventResponse, error)
-	GetEventByUserId(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*EventListResponse, error)
+	GetEventByUserId(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*EventListResponse, error)
 	GetEventByCategory(ctx context.Context, in *Category, opts ...grpc.CallOption) (*EventListResponse, error)
+	GetUserIdById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*UserId, error)
 }
 
 type eventServiceClient struct {
@@ -87,7 +89,7 @@ func (c *eventServiceClient) GetEventById(ctx context.Context, in *Id, opts ...g
 	return out, nil
 }
 
-func (c *eventServiceClient) GetEventByUserId(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*EventListResponse, error) {
+func (c *eventServiceClient) GetEventByUserId(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*EventListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(EventListResponse)
 	err := c.cc.Invoke(ctx, EventService_GetEventByUserId_FullMethodName, in, out, cOpts...)
@@ -107,6 +109,16 @@ func (c *eventServiceClient) GetEventByCategory(ctx context.Context, in *Categor
 	return out, nil
 }
 
+func (c *eventServiceClient) GetUserIdById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*UserId, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserId)
+	err := c.cc.Invoke(ctx, EventService_GetUserIdById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility.
@@ -115,8 +127,9 @@ type EventServiceServer interface {
 	UpdateDescription(context.Context, *UpdateDescriptionRequest) (*UpdateDescriptionResponse, error)
 	GetAllEvent(context.Context, *Empty) (*EventListResponse, error)
 	GetEventById(context.Context, *Id) (*EventResponse, error)
-	GetEventByUserId(context.Context, *UserId) (*EventListResponse, error)
+	GetEventByUserId(context.Context, *Empty) (*EventListResponse, error)
 	GetEventByCategory(context.Context, *Category) (*EventListResponse, error)
+	GetUserIdById(context.Context, *Id) (*UserId, error)
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -139,11 +152,14 @@ func (UnimplementedEventServiceServer) GetAllEvent(context.Context, *Empty) (*Ev
 func (UnimplementedEventServiceServer) GetEventById(context.Context, *Id) (*EventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEventById not implemented")
 }
-func (UnimplementedEventServiceServer) GetEventByUserId(context.Context, *UserId) (*EventListResponse, error) {
+func (UnimplementedEventServiceServer) GetEventByUserId(context.Context, *Empty) (*EventListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEventByUserId not implemented")
 }
 func (UnimplementedEventServiceServer) GetEventByCategory(context.Context, *Category) (*EventListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEventByCategory not implemented")
+}
+func (UnimplementedEventServiceServer) GetUserIdById(context.Context, *Id) (*UserId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserIdById not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 func (UnimplementedEventServiceServer) testEmbeddedByValue()                      {}
@@ -239,7 +255,7 @@ func _EventService_GetEventById_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _EventService_GetEventByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserId)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -251,7 +267,7 @@ func _EventService_GetEventByUserId_Handler(srv interface{}, ctx context.Context
 		FullMethod: EventService_GetEventByUserId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventServiceServer).GetEventByUserId(ctx, req.(*UserId))
+		return srv.(EventServiceServer).GetEventByUserId(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -270,6 +286,24 @@ func _EventService_GetEventByCategory_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServiceServer).GetEventByCategory(ctx, req.(*Category))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_GetUserIdById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).GetUserIdById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_GetUserIdById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).GetUserIdById(ctx, req.(*Id))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -304,6 +338,10 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEventByCategory",
 			Handler:    _EventService_GetEventByCategory_Handler,
+		},
+		{
+			MethodName: "GetUserIdById",
+			Handler:    _EventService_GetUserIdById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

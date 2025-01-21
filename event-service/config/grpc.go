@@ -1,8 +1,6 @@
 package config
 
 import (
-	"context"
-
 	"github.com/dharmasatrya/goodkarma/event-service/src/repository"
 
 	"log"
@@ -13,8 +11,6 @@ import (
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
 	"github.com/dharmasatrya/goodkarma/event-service/src/service"
 
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 )
 
@@ -26,21 +22,16 @@ func ListenAndServeGrpc() {
 		log.Fatal(err)
 	}
 
-	db := InitDatabase()
-	eventRepository := repository.NewEventRepository(db)
-	notifService := service.NewEventService(eventRepository)
-
 	// Define a custom interceptor for JWT that conditionally skips authentication for register endpoint
 	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			logging.UnaryServerInterceptor(middlewares.NewInterceptorLogger()),
-			grpc_auth.UnaryServerInterceptor(func(ctx context.Context) (context.Context, error) {
-				return middlewares.JWTAuth(ctx)
-			}),
-		),
+		grpc.UnaryInterceptor(middlewares.UnaryAuthInterceptor),
 	)
 
-	pb.RegisterEventServiceServer(grpcServer, notifService)
+	db := InitDatabase()
+	eventRepository := repository.NewEventRepository(db)
+	eventService := service.NewEventService(eventRepository)
+
+	pb.RegisterEventServiceServer(grpcServer, eventService)
 
 	log.Println("\033[36mGRPC server is running on port:", port, "\033[0m")
 	if err := grpcServer.Serve(lis); err != nil {
