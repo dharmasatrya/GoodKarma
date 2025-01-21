@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 
+	donationpb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 	"github.com/dharmasatrya/goodkarma/payment-service/external"
 	"github.com/dharmasatrya/goodkarma/payment-service/src/repository"
 	"github.com/dharmasatrya/goodkarma/user-service/proto"
-	"github.com/google/uuid"
 
 	pb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
@@ -26,14 +26,20 @@ type PaymentService struct {
 	pb.UnimplementedPaymentServiceServer
 	paymentRepository repository.PaymentRepository
 	userClient        *client.UserServiceClient
+	donationClient    *client.DonationServiceClient
 }
 
 // var jwtSecret = []byte("secret")
 
-func NewPaymentService(paymentRepository repository.PaymentRepository, userClient *client.UserServiceClient) *PaymentService {
+func NewPaymentService(
+	paymentRepository repository.PaymentRepository,
+	userClient *client.UserServiceClient,
+	donationClient *client.DonationServiceClient,
+) *PaymentService {
 	return &PaymentService{
 		paymentRepository: paymentRepository,
 		userClient:        userClient,
+		donationClient:    donationClient,
 	}
 }
 
@@ -168,7 +174,7 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 	}
 
 	invoice := entity.XenditInvoiceRequest{
-		ExternalId:  "goodkarma" + uuid.New().String(),
+		ExternalId:  req.ExternalId,
 		Amount:      int(req.Amount),
 		Description: req.Description,
 		Name:        userDetail.FullName,
@@ -242,5 +248,37 @@ func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) 
 
 	return &pb.WithdrawResponse{
 		Message: "Disbursement created, balance will be deducted once the disbursement has been completed",
+	}, nil
+}
+
+func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.XenditInvoiceCallbackRequest) (*pb.Donation, error) {
+
+	donation, err := s.donationClient.Client.UpdateDonationStatusXendit(ctx, &donationpb.UpdateDonationStatusRequest{
+		Id:     req.DonationId,
+		Status: "COMPLETED",
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating balance")
+	}
+
+	balanceShift := entity.UpdateWalleetBalanceRequest{
+		UserID: donation.UserId,
+		Amount: req.Amount,
+		Type:   "money_in",
+	}
+
+	_, err1 := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
+	if err1 != nil {
+		fmt.Println(err1, ",,,,,,,,,,")
+		return nil, status.Errorf(codes.Internal, "error updating balance")
+	}
+
+	return &pb.Donation{
+		Id:           donation.Id,
+		UserId:       donation.UserId,
+		EventId:      donation.UserId,
+		Amount:       donation.Amount,
+		Status:       donation.Status,
+		DonationType: donation.DonationType,
 	}, nil
 }

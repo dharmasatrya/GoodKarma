@@ -15,11 +15,12 @@ import (
 )
 
 var protectedMethods = map[string]bool{
-	"/payment.PaymentService/CreateWallet":        false,
-	"/payment.PaymentService/UpdateWalletBalance": true,
-	"/payment.PaymentService/Withdraw":            true,
-	"/payment.PaymentService/CreateInvoice":       true,
-	"/payment.PaymentService/GetWalletByUserId":   true, // Add this
+	"/payment.PaymentService/CreateWallet":          false,
+	"/payment.PaymentService/UpdateWalletBalance":   true,
+	"/payment.PaymentService/Withdraw":              true,
+	"/payment.PaymentService/CreateInvoice":         true,
+	"/payment.PaymentService/GetWalletByUserId":     true,
+	"/payment.PaymentService/XenditInvoiceCallback": false,
 }
 
 func UnaryAuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
