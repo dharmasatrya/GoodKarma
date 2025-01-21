@@ -11,20 +11,18 @@ import (
 )
 
 func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
-	// mongoURI := os.Getenv("MONGODB_URI")
-	// if mongoURI == "" {
-	// 	mongoURI = "mongodb://mongodb-bookstore:27017"
-	// }
+	MONGO_URI := os.Getenv("MONGO_URI")
+	MONGO_DB := os.Getenv("MONGO_DATABASE")
+	MONGODB_COLLECTION := os.Getenv("MONGO_COLLECTION")
 
-	mongoURI := os.Getenv("MONGODB_URI")
-	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017"
+	if MONGO_URI == "" {
+		MONGO_URI = "mongodb://localhost:27017"
 	}
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI(mongoURI)
+	clientOptions := options.Client().ApplyURI(MONGO_URI)
 	client, err := mongo.Connect(ctxWithTimeout, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %v", err)
@@ -35,7 +33,7 @@ func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %v", err)
 	}
 
-	walletCollection := client.Database("goodkarma").Collection("wallet")
+	walletCollection := client.Database(MONGO_DB).Collection(MONGODB_COLLECTION)
 	fmt.Println("Successfully connected to MongoDB")
 
 	return walletCollection, nil
