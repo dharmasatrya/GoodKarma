@@ -26,6 +26,13 @@ type UpdateWalleetBalanceRequest struct {
 	Type   string `json:"type" bson:"type"`
 }
 
+type XenditInvoiceCallbackRequest struct {
+	UserID     string `json:"user_id" bson:"user_id"`
+	Amount     uint32 `json:"amount" bson:"amount"`
+	Type       string `json:"type" bson:"type"`
+	DonationID string `json:"donation_id" bson:"donation_id"`
+}
+
 type WithdrawRequest struct {
 	UserId string `json:"user_id" bson:"user_id"`
 	Amount uint32 `json:"amount" bson:"amount"`
