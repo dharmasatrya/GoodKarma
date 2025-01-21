@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"gateway-service/dto"
 	"gateway-service/helpers"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
+	"google.golang.org/grpc/status"
 )
 
 func parseDate(dateStr string) time.Time {
@@ -22,7 +24,7 @@ func parseDate(dateStr string) time.Time {
 }
 
 type EventService interface {
-	CreateEvent(token string, input dto.EventRequest) (int, *dto.Event)
+	CreateEvent(token string, input dto.EventRequest) (int, *dto.Event, error)
 	EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event)
 	GetAllEvents() (int, *[]dto.Event)
 	GetEventById(id string) (int, *dto.Event)
@@ -38,11 +40,11 @@ func NewEventService(eventClient pb.EventServiceClient) *eventService {
 	return &eventService{eventClient}
 }
 
-func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *dto.Event) {
+func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *dto.Event, error) {
 	ctx, cancel, err := helpers.NewServiceContext(token)
 	if err != nil {
 		log.Printf("Error creating context %v", err)
-		return http.StatusInternalServerError, nil
+		return http.StatusInternalServerError, nil, err
 	}
 	defer cancel()
 
@@ -55,7 +57,12 @@ func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *
 	})
 
 	if err != nil {
-		log.Printf("error while create request %v", err)
+		grpcErr, ok := status.FromError(err)
+		if ok {
+			return http.StatusInternalServerError, nil, errors.New(grpcErr.Message())
+		}
+
+		return http.StatusInternalServerError, nil, err
 	}
 
 	id, err := strconv.Atoi(res.Id)
@@ -84,7 +91,7 @@ func (s *eventService) CreateEvent(token string, input dto.EventRequest) (int, *
 		DonationType: res.DonationType,
 	}
 
-	return http.StatusCreated, &response
+	return http.StatusCreated, &response, nil
 }
 
 func (s *eventService) EditEvent(token string, id string, input dto.UpdateDescriptionRequest) (int, *dto.Event) {
