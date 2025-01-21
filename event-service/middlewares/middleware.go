@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -70,12 +71,14 @@ func AuthInterceptor(ctx context.Context) (context.Context, error) {
 }
 
 func ValidateToken(tokenString string) (jwt.MapClaims, error) {
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		// Use the same secret as your auth service
-		return []byte("hacktiv8p3gc2"), nil // Replace with your actual secret
+		return []byte(jwtSecretKey), nil // Replace with your actual secret
 	})
 
 	if err != nil {
