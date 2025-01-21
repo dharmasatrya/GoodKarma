@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	donationpb "github.com/dharmasatrya/goodkarma/donation-service/proto"
+	eventpb "github.com/dharmasatrya/goodkarma/event-service/proto"
 	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/entity"
 	"github.com/dharmasatrya/goodkarma/payment-service/external"
@@ -27,6 +28,7 @@ type PaymentService struct {
 	paymentRepository repository.PaymentRepository
 	userClient        *client.UserServiceClient
 	donationClient    *client.DonationServiceClient
+	eventClient       *client.EventServiceClient
 }
 
 // var jwtSecret = []byte("secret")
@@ -35,11 +37,13 @@ func NewPaymentService(
 	paymentRepository repository.PaymentRepository,
 	userClient *client.UserServiceClient,
 	donationClient *client.DonationServiceClient,
+	eventClient *client.EventServiceClient,
 ) *PaymentService {
 	return &PaymentService{
 		paymentRepository: paymentRepository,
 		userClient:        userClient,
 		donationClient:    donationClient,
+		eventClient:       eventClient,
 	}
 }
 
@@ -261,8 +265,13 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 		return nil, status.Errorf(codes.Internal, "error updating balance")
 	}
 
+	event, eventErr := s.eventClient.Client.GetEventById(ctx, &eventpb.Id{Id: donation.EventId})
+	if eventErr != nil {
+		return nil, status.Errorf(codes.Internal, "error fetching event")
+	}
+
 	balanceShift := entity.UpdateWalleetBalanceRequest{
-		UserID: donation.UserId,
+		UserID: event.UserId,
 		Amount: req.Amount,
 		Type:   "money_in",
 	}

@@ -62,7 +62,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 
 	res, err := s.donationRepository.CreateDonation(donation)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating wallet")
+		return nil, status.Errorf(codes.Internal, "error creating donation")
 	}
 
 	if req.DonationType == "uang" {
