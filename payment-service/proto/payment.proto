@@ -12,6 +12,7 @@ service PaymentService {
     rpc Withdraw (WithdrawRequest) returns (WithdrawResponse);
     rpc CreateInvoice (CreateInvoiceRequest) returns (CreateInvoiceResponse);
     rpc GetWalletByUserId (google.protobuf.Empty) returns (GetWalletResponse);
+    rpc XenditInvoiceCallback (XenditInvoiceCallbackRequest) returns (Donation);
 }
 
 message CreateWalletRequest {
@@ -39,9 +40,24 @@ message GetWalletResponse {
     uint32 amount = 6;
 }
 
+message Donation {
+    string id = 1;
+    string user_id = 2;
+    string event_id = 3;
+    uint32 amount = 4;
+    string status = 5;
+    string donation_type = 6;
+}
+
 message UpdateWalletBalanceRequest {
     uint32 amount = 1;
     string type = 2;
+}
+
+message XenditInvoiceCallbackRequest {
+    uint32 amount = 1;
+    string type = 2;
+    string donation_id = 3;
 }
 
 message UpdateWalleetBalanceResponse {

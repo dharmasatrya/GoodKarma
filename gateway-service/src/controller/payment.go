@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"gateway-service/dto"
 	"gateway-service/src/service"
 	"net/http"
@@ -106,15 +107,18 @@ func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, "Missing callback token")
 	}
 
+	fmt.Println(callbackToken)
+
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	balanceUpdateReq := dto.UpdateWalletBalanceRequest{
-		Amount: req.Amount,
-		Type:   "money_in",
+	balanceUpdateReq := dto.UpdateInvoiceBalanceRequest{
+		Amount:     req.Amount,
+		Type:       "money_in",
+		DonationID: req.ExternalId,
 	}
-	status, response := h.paymentService.UpdateWalletBalance(callbackToken, balanceUpdateReq)
+	status, response := h.paymentService.UpdateInvoiceWalletBalance(callbackToken, balanceUpdateReq)
 
 	return c.JSON(status, response)
 }

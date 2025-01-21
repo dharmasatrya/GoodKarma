@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("Error connecting to db")
 	}
 
-	paymentServiceUrl := "localhost:50051"
+	paymentServiceUrl := "localhost:50053"
 	paymentClient, err := client.NewPaymentServiceClient(paymentServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)

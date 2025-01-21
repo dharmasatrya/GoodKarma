@@ -17,6 +17,21 @@ services:
       - mongodb_data:/data/db
     networks:
       - shared-network
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-goodkarma
+    restart: always
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - shared-network
 
   user-service:
     build: 
@@ -24,18 +39,15 @@ services:
       dockerfile: ./user-service/Dockerfile
     container_name: user-service
     restart: always
-    environment:
-      - MONGO_URI=mongodb+srv://kt2602:BhfqVlWg7Z0eYxh9@kt2602.3bntnvj.mongodb.net/
-      - MONGO_DATABASE=good-karma
-      - MONGODB_COLLECTION=users
     ports:
       - "50051:50051"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
     depends_on:
       - mongodb
+      - rabbitmq
+    env_file:
+      - ./user-service/.env
 
   donation-service:
     build: 
@@ -43,18 +55,14 @@ services:
       dockerfile: ./donation-service/Dockerfile
     container_name: donation-service
     restart: always
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=goodkarma
-      - MONGODB_COLLECTION=donations
     ports:
       - "50052:50052"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
     depends_on:
       - mongodb
+    env_file:
+      - ./donation-service/.env
 
   payment-service:
     build: 
@@ -62,18 +70,14 @@ services:
       dockerfile: ./payment-service/Dockerfile
     container_name: payment-service
     restart: always
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=goodkarma
-      - MONGODB_COLLECTION=payments
     ports:
       - "50053:50053"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
     depends_on:
       - mongodb
+    env_file:
+      - ./payment-service/.env
 
   notification-service:
     build: 
@@ -81,18 +85,15 @@ services:
       dockerfile: ./notification-service/Dockerfile
     container_name: notification-service
     restart: always
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=goodkarma
-      - MONGODB_COLLECTION=notifications
     ports:
       - "50054:50054"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
     depends_on:
       - mongodb
+      - rabbitmq
+    env_file:
+      - ./notification-service/.env
 
   event-service:
     build: 
@@ -100,18 +101,12 @@ services:
       dockerfile: ./event-service/Dockerfile
     container_name: event-service
     restart: always
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=goodkarma
-      - MONGODB_COLLECTION=events
     ports:
       - "50055:50055"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
-    depends_on:
-      - mongodb
+    env_file:
+      - ./event-service/.env
 
   gateway-service:
     build: 
@@ -127,8 +122,6 @@ services:
       - EVENT_SERVICE_URL=event-service:50055
     ports:
       - "8080:8080"
-    volumes:
-      - ./proto-repo:/app/proto-repo
     networks:
       - shared-network
     depends_on:
@@ -137,6 +130,9 @@ services:
       - payment-service
       - notification-service
       - event-service
+    env_file:
+      - ./gateway-service/.env
 
 volumes:
   mongodb_data:
+  rabbitmq_data:

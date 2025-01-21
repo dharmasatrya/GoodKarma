@@ -14,7 +14,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var protectedMethods = map[string]bool{
+	"/donation.DonationService/CreateDonation":             true,
+	"/donation.DonationService/UpdateDonationStatus":       true,
+	"/donation.DonationService/UpdateDonationStatusXendit": false,
+	"/donation.DonationService/GetDonationsByUserId":       true,
+	"/donation.DonationService/GetDonationsByEventId":      true,
+}
+
 func UnaryAuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// Check if the method requires authentication
+	if requiresAuth := protectedMethods[info.FullMethod]; !requiresAuth {
+		// Method doesn't require auth, proceed without checking
+		return handler(ctx, req)
+	}
+
+	// Method requires auth, proceed with authentication
 	ctx, err := AuthInterceptor(ctx)
 	if err != nil {
 		return nil, err

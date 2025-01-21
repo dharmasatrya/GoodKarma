@@ -70,7 +70,7 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	err := r.db.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("error 62", err)
+			fmt.Println("error 62", err, input.UserID)
 			return nil, fmt.Errorf("wallet not found")
 		}
 	}

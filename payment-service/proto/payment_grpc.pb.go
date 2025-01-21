@@ -20,11 +20,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PaymentService_CreateWallet_FullMethodName        = "/payment.PaymentService/CreateWallet"
-	PaymentService_UpdateWalletBalance_FullMethodName = "/payment.PaymentService/UpdateWalletBalance"
-	PaymentService_Withdraw_FullMethodName            = "/payment.PaymentService/Withdraw"
-	PaymentService_CreateInvoice_FullMethodName       = "/payment.PaymentService/CreateInvoice"
-	PaymentService_GetWalletByUserId_FullMethodName   = "/payment.PaymentService/GetWalletByUserId"
+	PaymentService_CreateWallet_FullMethodName          = "/payment.PaymentService/CreateWallet"
+	PaymentService_UpdateWalletBalance_FullMethodName   = "/payment.PaymentService/UpdateWalletBalance"
+	PaymentService_Withdraw_FullMethodName              = "/payment.PaymentService/Withdraw"
+	PaymentService_CreateInvoice_FullMethodName         = "/payment.PaymentService/CreateInvoice"
+	PaymentService_GetWalletByUserId_FullMethodName     = "/payment.PaymentService/GetWalletByUserId"
+	PaymentService_XenditInvoiceCallback_FullMethodName = "/payment.PaymentService/XenditInvoiceCallback"
 )
 
 // PaymentServiceClient is the client API for PaymentService service.
@@ -36,6 +37,7 @@ type PaymentServiceClient interface {
 	Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*WithdrawResponse, error)
 	CreateInvoice(ctx context.Context, in *CreateInvoiceRequest, opts ...grpc.CallOption) (*CreateInvoiceResponse, error)
 	GetWalletByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetWalletResponse, error)
+	XenditInvoiceCallback(ctx context.Context, in *XenditInvoiceCallbackRequest, opts ...grpc.CallOption) (*Donation, error)
 }
 
 type paymentServiceClient struct {
@@ -96,6 +98,16 @@ func (c *paymentServiceClient) GetWalletByUserId(ctx context.Context, in *emptyp
 	return out, nil
 }
 
+func (c *paymentServiceClient) XenditInvoiceCallback(ctx context.Context, in *XenditInvoiceCallbackRequest, opts ...grpc.CallOption) (*Donation, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Donation)
+	err := c.cc.Invoke(ctx, PaymentService_XenditInvoiceCallback_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentServiceServer is the server API for PaymentService service.
 // All implementations must embed UnimplementedPaymentServiceServer
 // for forward compatibility.
@@ -105,6 +117,7 @@ type PaymentServiceServer interface {
 	Withdraw(context.Context, *WithdrawRequest) (*WithdrawResponse, error)
 	CreateInvoice(context.Context, *CreateInvoiceRequest) (*CreateInvoiceResponse, error)
 	GetWalletByUserId(context.Context, *emptypb.Empty) (*GetWalletResponse, error)
+	XenditInvoiceCallback(context.Context, *XenditInvoiceCallbackRequest) (*Donation, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
 
@@ -129,6 +142,9 @@ func (UnimplementedPaymentServiceServer) CreateInvoice(context.Context, *CreateI
 }
 func (UnimplementedPaymentServiceServer) GetWalletByUserId(context.Context, *emptypb.Empty) (*GetWalletResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWalletByUserId not implemented")
+}
+func (UnimplementedPaymentServiceServer) XenditInvoiceCallback(context.Context, *XenditInvoiceCallbackRequest) (*Donation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method XenditInvoiceCallback not implemented")
 }
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
 func (UnimplementedPaymentServiceServer) testEmbeddedByValue()                        {}
@@ -241,6 +257,24 @@ func _PaymentService_GetWalletByUserId_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PaymentService_XenditInvoiceCallback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(XenditInvoiceCallbackRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).XenditInvoiceCallback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PaymentService_XenditInvoiceCallback_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).XenditInvoiceCallback(ctx, req.(*XenditInvoiceCallbackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -267,6 +301,10 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWalletByUserId",
 			Handler:    _PaymentService_GetWalletByUserId_Handler,
+		},
+		{
+			MethodName: "XenditInvoiceCallback",
+			Handler:    _PaymentService_XenditInvoiceCallback_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
