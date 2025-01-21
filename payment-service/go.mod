@@ -4,6 +4,7 @@ go 1.23.5
 
 require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-20250120163630-0be5ef3fd993
+	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/joho/godotenv v1.5.1
@@ -29,3 +30,5 @@ require (
 )
 
 replace github.com/dharmasatrya/goodkarma/donation-service => ../donation-service
+
+replace github.com/dharmasatrya/goodkarma/event-service => ../event-service
