@@ -5,7 +5,6 @@ go 1.23.2
 require (
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/golang-jwt/jwt/v4 v4.5.1
-	github.com/google/uuid v1.6.0
 	go.mongodb.org/mongo-driver v1.17.2
 	google.golang.org/grpc v1.69.4
 	google.golang.org/protobuf v1.36.2

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.2
-// source: proto/donation.proto
+// source: donation.proto
 
 package proto
 
@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DonationService_CreateDonation_FullMethodName        = "/donation.DonationService/CreateDonation"
-	DonationService_UpdateDonationStatus_FullMethodName  = "/donation.DonationService/UpdateDonationStatus"
-	DonationService_GetDonationsByUserId_FullMethodName  = "/donation.DonationService/GetDonationsByUserId"
-	DonationService_GetDonationsByEventId_FullMethodName = "/donation.DonationService/GetDonationsByEventId"
+	DonationService_CreateDonation_FullMethodName             = "/donation.DonationService/CreateDonation"
+	DonationService_UpdateDonationStatus_FullMethodName       = "/donation.DonationService/UpdateDonationStatus"
+	DonationService_UpdateDonationStatusXendit_FullMethodName = "/donation.DonationService/UpdateDonationStatusXendit"
+	DonationService_GetDonationsByUserId_FullMethodName       = "/donation.DonationService/GetDonationsByUserId"
+	DonationService_GetDonationsByEventId_FullMethodName      = "/donation.DonationService/GetDonationsByEventId"
 )
 
 // DonationServiceClient is the client API for DonationService service.
@@ -31,6 +32,7 @@ const (
 type DonationServiceClient interface {
 	CreateDonation(ctx context.Context, in *CreateDonationRequest, opts ...grpc.CallOption) (*CreateDonationResponse, error)
 	UpdateDonationStatus(ctx context.Context, in *UpdateDonationStatusRequest, opts ...grpc.CallOption) (*UpdateDonationStatusResponse, error)
+	UpdateDonationStatusXendit(ctx context.Context, in *UpdateDonationStatusRequest, opts ...grpc.CallOption) (*UpdateDonationStatusResponse, error)
 	GetDonationsByUserId(ctx context.Context, in *GetDonationsByUserIdRequest, opts ...grpc.CallOption) (*GetDonationsByUserIdResponse, error)
 	GetDonationsByEventId(ctx context.Context, in *GetDonationsByEventIdRequest, opts ...grpc.CallOption) (*GetDonationsByEventIdResponse, error)
 }
@@ -63,6 +65,16 @@ func (c *donationServiceClient) UpdateDonationStatus(ctx context.Context, in *Up
 	return out, nil
 }
 
+func (c *donationServiceClient) UpdateDonationStatusXendit(ctx context.Context, in *UpdateDonationStatusRequest, opts ...grpc.CallOption) (*UpdateDonationStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDonationStatusResponse)
+	err := c.cc.Invoke(ctx, DonationService_UpdateDonationStatusXendit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *donationServiceClient) GetDonationsByUserId(ctx context.Context, in *GetDonationsByUserIdRequest, opts ...grpc.CallOption) (*GetDonationsByUserIdResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDonationsByUserIdResponse)
@@ -89,6 +101,7 @@ func (c *donationServiceClient) GetDonationsByEventId(ctx context.Context, in *G
 type DonationServiceServer interface {
 	CreateDonation(context.Context, *CreateDonationRequest) (*CreateDonationResponse, error)
 	UpdateDonationStatus(context.Context, *UpdateDonationStatusRequest) (*UpdateDonationStatusResponse, error)
+	UpdateDonationStatusXendit(context.Context, *UpdateDonationStatusRequest) (*UpdateDonationStatusResponse, error)
 	GetDonationsByUserId(context.Context, *GetDonationsByUserIdRequest) (*GetDonationsByUserIdResponse, error)
 	GetDonationsByEventId(context.Context, *GetDonationsByEventIdRequest) (*GetDonationsByEventIdResponse, error)
 	mustEmbedUnimplementedDonationServiceServer()
@@ -106,6 +119,9 @@ func (UnimplementedDonationServiceServer) CreateDonation(context.Context, *Creat
 }
 func (UnimplementedDonationServiceServer) UpdateDonationStatus(context.Context, *UpdateDonationStatusRequest) (*UpdateDonationStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDonationStatus not implemented")
+}
+func (UnimplementedDonationServiceServer) UpdateDonationStatusXendit(context.Context, *UpdateDonationStatusRequest) (*UpdateDonationStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDonationStatusXendit not implemented")
 }
 func (UnimplementedDonationServiceServer) GetDonationsByUserId(context.Context, *GetDonationsByUserIdRequest) (*GetDonationsByUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDonationsByUserId not implemented")
@@ -170,6 +186,24 @@ func _DonationService_UpdateDonationStatus_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DonationService_UpdateDonationStatusXendit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDonationStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DonationServiceServer).UpdateDonationStatusXendit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DonationService_UpdateDonationStatusXendit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DonationServiceServer).UpdateDonationStatusXendit(ctx, req.(*UpdateDonationStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DonationService_GetDonationsByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDonationsByUserIdRequest)
 	if err := dec(in); err != nil {
@@ -222,6 +256,10 @@ var DonationService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DonationService_UpdateDonationStatus_Handler,
 		},
 		{
+			MethodName: "UpdateDonationStatusXendit",
+			Handler:    _DonationService_UpdateDonationStatusXendit_Handler,
+		},
+		{
 			MethodName: "GetDonationsByUserId",
 			Handler:    _DonationService_GetDonationsByUserId_Handler,
 		},
@@ -231,5 +269,5 @@ var DonationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/donation.proto",
+	Metadata: "donation.proto",
 }
