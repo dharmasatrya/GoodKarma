@@ -86,7 +86,7 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	var updatedWallet entity.Wallet
 	err1 := r.db.FindOneAndUpdate(
 		ctx,
-		bson.M{"id": wallet.ID},
+		bson.M{"_id": wallet.ID},
 		bson.M{"$set": bson.M{"amount": wallet.Amount}}, // Added the update operation
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&updatedWallet)
