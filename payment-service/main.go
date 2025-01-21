@@ -52,9 +52,15 @@ func main() {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
+	eventServiceUrl := "localhost:50055"
+	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
+	if err != nil {
+		log.Fatalf("Failed to create user service client: %v", err)
+	}
+
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	paymentService := service.NewPaymentService(paymentRepository, userClient, donationClient)
+	paymentService := service.NewPaymentService(paymentRepository, userClient, donationClient, eventClient)
 	pb.RegisterPaymentServiceServer(grpcServer, paymentService)
 
 	log.Println("Server is running on port 50053...")
