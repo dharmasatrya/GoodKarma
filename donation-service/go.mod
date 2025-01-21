@@ -1,6 +1,6 @@
 module github.com/dharmasatrya/goodkarma/donation-service
 
-go 1.23.2
+go 1.23.5
 
 require (
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
