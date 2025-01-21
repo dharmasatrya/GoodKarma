@@ -26,6 +26,11 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
+	err1 := godotenv.Load()
+	if err1 != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
 	)
