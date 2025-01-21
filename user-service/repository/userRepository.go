@@ -25,7 +25,8 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db *mongo.Database
+	db             *mongo.Database
+	userRepository UserRepository
 }
 
 func (ur *userRepository) GetUserCollection() *mongo.Collection {
