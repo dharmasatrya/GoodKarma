@@ -18,6 +18,7 @@ type UserRepository interface {
 	Login(entity.LoginRequest) (*entity.User, error)
 	GetUserById(string) (*entity.DetailUser, error)
 	UpdateProfile(entity.UpdateProfileRequest) (*entity.DetailUser, error)
+	VerifyEmail(string) error
 }
 
 type userRepository struct {
@@ -217,6 +218,24 @@ func (ur *userRepository) UpdateProfile(request entity.UpdateProfileRequest) (*e
 	}
 
 	return user, nil
+}
+
+func (ur *userRepository) VerifyEmail(userID string) error {
+	userCollection := ur.GetUserCollection()
+
+	userIDObj, err := primitive.ObjectIDFromHex(userID)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = userCollection.UpdateOne(context.Background(), primitive.M{"_id": userIDObj}, primitive.M{"$set": primitive.M{"email_verified": true}})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ur *userRepository) validateCreateUser(request entity.CreateUserSupporterRequest) error {

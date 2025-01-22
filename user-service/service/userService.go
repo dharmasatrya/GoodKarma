@@ -13,6 +13,7 @@ import (
 	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
+	"github.com/dharmasatrya/goodkarma/user-service/helper"
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/repository"
 	"github.com/golang-jwt/jwt/v5"
@@ -58,10 +59,13 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 	}
 
 	tokenString, err := us.generateJWTToken(result)
+	baseUrl := os.Getenv("BASE_URL")
+
+	link := fmt.Sprintf("%v/users/email/verify/%v", baseUrl, tokenString)
 
 	dataJsonRequest := entity.UserRegistData{
 		Email: req.Email,
-		Link:  tokenString,
+		Link:  link,
 	}
 
 	dataJson, err := json.Marshal(dataJsonRequest)
@@ -319,4 +323,22 @@ func (us *UserService) createWallet(userID string, request entity.CreateUserCoor
 	}
 
 	return nil
+}
+
+func (us *UserService) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.Empty, error) {
+	claims, err := helper.GetClaims(req.Token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userID := claims["user_id"].(string)
+
+	err = us.userRepository.VerifyEmail(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Empty{}, nil
 }
