@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"github.com/dharmasatrya/goodkarma/payment-service/client"
 	"github.com/dharmasatrya/goodkarma/payment-service/middleware"
@@ -33,26 +34,24 @@ func main() {
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
 	)
 
-	// grpcServer := grpc.NewServer()
-
 	db, err := config.ConnectionDB(context.Background())
 	if err != nil {
 		log.Fatalf("Error connecting to db")
 	}
 
-	userServiceUrl := "localhost:50051"
+	userServiceUrl := os.Getenv("USER_SERVICE_URI_DEV")
 	userClient, err := client.NewUserServiceClient(userServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
-	donationServiceUrl := "localhost:50052"
+	donationServiceUrl := os.Getenv("DONATION_SERVICE_URI_DEV")
 	donationClient, err := client.NewDonationServiceClient(donationServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
-	eventServiceUrl := "localhost:50055"
+	eventServiceUrl := os.Getenv("EVENT_SERVICE_URI_DEV")
 	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
