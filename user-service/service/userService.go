@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
+
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/repository"
@@ -21,13 +23,15 @@ import (
 type UserService struct {
 	userRepository repository.UserRepository
 	messageBroker  MessageBroker
+	paymentClient  paymentPb.PaymentServiceClient
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker) *UserService {
+func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker, paymentClient paymentPb.PaymentServiceClient) *UserService {
 	return &UserService{
 		userRepository: userRepository,
 		messageBroker:  messageBroker,
+		paymentClient:  paymentClient,
 	}
 }
 
@@ -115,6 +119,12 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 	}
 
 	result, err := us.userRepository.CreateUserCoordinator(payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.createWallet(result.ID.Hex(), reqBank)
 
 	if err != nil {
 		return nil, err
@@ -293,4 +303,20 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (us *UserService) createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
+	// Make the gRPC call to create a wallet
+	_, err := us.paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
+		UserId:            userID,
+		BankAccountName:   request.AccountHolderName,
+		BankCode:          request.BankCode,
+		BankAccountNumber: request.BankAccountNumber,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create wallet: %w", err)
+	}
+
+	return nil
 }

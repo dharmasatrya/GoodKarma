@@ -3,13 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
-	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -110,11 +106,11 @@ func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordin
 		return nil, err
 	}
 
-	err = createWallet(res.ID.Hex(), request)
+	// err = createWallet(res.ID.Hex(), request)
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return res, nil
 }
@@ -221,38 +217,6 @@ func (ur *userRepository) UpdateProfile(request entity.UpdateProfileRequest) (*e
 	}
 
 	return user, nil
-}
-
-func createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
-	// Get payment service URI
-	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI_DEV")
-	if paymentServiceURI == "" {
-		return fmt.Errorf("PAYMENT_SERVICE_URI is not set")
-	}
-
-	// Create gRPC connection
-	grpcConn, err := grpc.NewClient(paymentServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return fmt.Errorf("failed to connect to payment service: %w", err)
-	}
-	defer grpcConn.Close()
-
-	// Initialize payment client
-	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
-
-	// Make the gRPC call to create a wallet
-	_, err = paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
-		UserId:            userID,
-		BankAccountName:   request.AccountHolderName,
-		BankCode:          request.BankCode,
-		BankAccountNumber: request.BankAccountNumber,
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to create wallet: %w", err)
-	}
-
-	return nil
 }
 
 func (ur *userRepository) validateCreateUser(request entity.CreateUserSupporterRequest) error {
