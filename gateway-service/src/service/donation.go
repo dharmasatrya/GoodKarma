@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"gateway-service/dto"
-	"log"
 	"net/http"
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
@@ -37,7 +36,7 @@ func (s *donationService) CreateDonation(token string, input dto.CreateDonationR
 		DonationType: input.DonationType,
 	})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.Donation{
@@ -61,7 +60,7 @@ func (s *donationService) UpdateDonationStatus(token string, input dto.UpdateDon
 		Status: input.Status,
 	})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.Donation{
@@ -82,7 +81,7 @@ func (s *donationService) GetAllDonationByUser(token string) (int, []dto.Donatio
 
 	res, err := s.Client.GetDonationsByUserId(ctx, &pb.GetDonationsByUserIdRequest{})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	donations := make([]dto.Donation, len(res.Donations))
@@ -108,7 +107,7 @@ func (s *donationService) GetAllDonationByEventId(token string, eventID string) 
 		EventId: eventID,
 	})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	donations := make([]dto.Donation, len(res.Donations))
