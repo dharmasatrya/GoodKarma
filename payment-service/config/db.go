@@ -34,7 +34,7 @@ func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
 	}
 
 	walletCollection := client.Database(MONGO_DB).Collection(MONGODB_COLLECTION)
-	fmt.Println("Successfully connected to MongoDB")
+	fmt.Printf("Successfully connected to MongoDB %v, collection: %v", MONGO_DB, MONGODB_COLLECTION)
 
 	return walletCollection, nil
 }

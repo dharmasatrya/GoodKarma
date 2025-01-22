@@ -145,11 +145,12 @@ func (h *paymentController) XenditDisbursementCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	balanceUpdateReq := dto.UpdateWalletBalanceRequest{
-		Amount: req.Amount,
-		Type:   "money_out",
+	balanceUpdateReq := dto.XenditDisbursementCallbackRequest{
+		ExternalID: req.ExternalId,
+		Amount:     req.Amount,
+		Type:       "money_out",
 	}
-	status, response := h.paymentService.UpdateWalletBalance(callbackToken, balanceUpdateReq)
+	status, response := h.paymentService.UpdateDisbursementWalletBalance(callbackToken, balanceUpdateReq)
 
 	return c.JSON(status, response)
 }
