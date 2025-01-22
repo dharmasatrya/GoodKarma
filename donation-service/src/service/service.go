@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/entity"
@@ -10,6 +11,8 @@ import (
 	"github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
+	eventpb "github.com/dharmasatrya/goodkarma/event-service/proto"
+	paymentpb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,14 +25,20 @@ type DonationService struct {
 	pb.UnimplementedDonationServiceServer
 	donationRepository repository.DonationRepository
 	paymentClient      *client.PaymentServiceClient
+	eventClient        *client.EventServiceClient
 }
 
 // var jwtSecret = []byte("secret")
 
-func NewDonationService(donationRepository repository.DonationRepository, paymentClient *client.PaymentServiceClient) *DonationService {
+func NewDonationService(
+	donationRepository repository.DonationRepository,
+	paymentClient *client.PaymentServiceClient,
+	eventClient *client.EventServiceClient,
+) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
 		paymentClient:      paymentClient,
+		eventClient:        eventClient,
 	}
 }
 
@@ -120,6 +129,22 @@ func (s *DonationService) UpdateDonationStatus(ctx context.Context, req *pb.Upda
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error updating donation status: %v", err)
 	}
+
+	eventIdToInt, err := strconv.Atoi(updatedDonation.EventID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error converting event id to int")
+	}
+	eventID := uint32(eventIdToInt)
+
+	event, eventErr := s.eventClient.Client.GetEventById(ctx, &eventpb.Id{Id: eventID})
+	if eventErr != nil {
+		return nil, status.Errorf(codes.Internal, "error fetching event")
+	}
+
+	s.paymentClient.Client.ChargeFees(ctx, &paymentpb.ChargeFeesRequest{
+		UserId: event.UserId,
+		Amount: 2000,
+	})
 
 	return &pb.UpdateDonationStatusResponse{
 		Id:           updatedDonation.ID.Hex(),
