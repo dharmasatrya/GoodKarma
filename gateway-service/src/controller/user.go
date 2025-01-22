@@ -102,3 +102,20 @@ func (us *userController) GetUserById(c echo.Context) error {
 		Data:    result,
 	})
 }
+
+func (us *userController) VerifyEmail(c echo.Context) error {
+	token := c.Param("token")
+
+	_, err := us.userService.VerifyEmail(token)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, entity.ResponseOK{
+		Message: "Email has been verified",
+		Data:    nil,
+	})
+}
