@@ -12,6 +12,7 @@ type UserService interface {
 	RegisterUserCoordinator(entity.CreateUserCoordinatorRequest) error
 	Login(entity.LoginRequest) (*pb.LoginResponse, error)
 	GetUserById(string) (*pb.GetUserByIdResponse, error)
+	VerifyEmail(string) (*pb.Empty, error)
 }
 
 type userService struct {
@@ -86,4 +87,16 @@ func (us *userService) GetUserById(id string) (*pb.GetUserByIdResponse, error) {
 	}
 
 	return res, nil
+}
+
+func (us *userService) VerifyEmail(token string) (*pb.Empty, error) {
+	_, err := us.Client.VerifyEmail(context.Background(), &pb.VerifyEmailRequest{
+		Token: token,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Empty{}, nil
 }
