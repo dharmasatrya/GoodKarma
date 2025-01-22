@@ -59,7 +59,12 @@ func main() {
 
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	paymentService := service.NewPaymentService(paymentRepository, userClient, donationClient, eventClient)
+	conn, mbChan := config.InitMessageBroker()
+	defer conn.Close()
+
+	messageBrokerService := service.NewMessageBroker(mbChan)
+
+	paymentService := service.NewPaymentService(paymentRepository, userClient, donationClient, eventClient, messageBrokerService)
 	pb.RegisterPaymentServiceServer(grpcServer, paymentService)
 
 	log.Println("Server is running on port 50053...")

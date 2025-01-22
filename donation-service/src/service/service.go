@@ -23,14 +23,16 @@ type DonationService struct {
 	pb.UnimplementedDonationServiceServer
 	donationRepository repository.DonationRepository
 	paymentClient      *client.PaymentServiceClient
+	messageBroker      MessageBroker
 }
 
 // var jwtSecret = []byte("secret")
 
-func NewDonationService(donationRepository repository.DonationRepository, paymentClient *client.PaymentServiceClient) *DonationService {
+func NewDonationService(donationRepository repository.DonationRepository, paymentClient *client.PaymentServiceClient, messageBroker MessageBroker) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
 		paymentClient:      paymentClient,
+		messageBroker:      messageBroker,
 	}
 }
 

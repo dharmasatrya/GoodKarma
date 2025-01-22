@@ -48,7 +48,12 @@ func main() {
 
 	donationRepository := repository.NewDonationRepository(db)
 
-	donationService := service.NewDonationService(donationRepository, paymentClient)
+	conn, mbChan := config.InitMessageBroker()
+	defer conn.Close()
+
+	messageBrokerService := service.NewMessageBroker(mbChan)
+
+	donationService := service.NewDonationService(donationRepository, paymentClient, messageBrokerService)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")
