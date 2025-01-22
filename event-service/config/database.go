@@ -43,6 +43,8 @@ func InitDatabase() *gorm.DB {
 		return nil
 	}
 
+	log.Println("Koneksi database postgres berhasil")
+
 	// Mengembalikan objek koneksi database GORM yang berhasil dibuka
 	return db
 }
