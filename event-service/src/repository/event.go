@@ -102,7 +102,7 @@ func (r *eventRepository) GetEventsByCategory(category string) (*[]entity.Event,
 }
 
 func validateCreateEvent(userID string) error {
-	userServiceURI := os.Getenv("USER_SERVICE_DEV_URI")
+	userServiceURI := os.Getenv("USER_SERVICE_URI")
 
 	grpcConn, err := grpc.NewClient(userServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

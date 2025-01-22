@@ -39,19 +39,19 @@ func main() {
 		log.Fatalf("Error connecting to db")
 	}
 
-	userServiceUrl := os.Getenv("USER_SERVICE_URI_DEV")
+	userServiceUrl := os.Getenv("USER_SERVICE_URI")
 	userClient, err := client.NewUserServiceClient(userServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
-	donationServiceUrl := os.Getenv("DONATION_SERVICE_URI_DEV")
+	donationServiceUrl := os.Getenv("DONATION_SERVICE_URI")
 	donationClient, err := client.NewDonationServiceClient(donationServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
-	eventServiceUrl := os.Getenv("EVENT_SERVICE_URI_DEV")
+	eventServiceUrl := os.Getenv("EVENT_SERVICE_URI")
 	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)

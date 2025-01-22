@@ -225,7 +225,7 @@ func (ur *userRepository) UpdateProfile(request entity.UpdateProfileRequest) (*e
 
 func createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
 	// Get payment service URI
-	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI_DEV")
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
 	if paymentServiceURI == "" {
 		return fmt.Errorf("PAYMENT_SERVICE_URI is not set")
 	}
