@@ -33,8 +33,6 @@ func main() {
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
 	)
 
-	// grpcServer := grpc.NewServer()
-
 	db, err := config.ConnectionDB(context.Background())
 	if err != nil {
 		log.Fatalf("Error connecting to db")

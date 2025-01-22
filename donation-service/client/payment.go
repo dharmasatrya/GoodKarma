@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -16,10 +15,9 @@ type PaymentServiceClient struct {
 
 func NewPaymentServiceClient(userServiceUrl string) (*PaymentServiceClient, error) {
 	grpcUri := os.Getenv("PAYMENT_SERVICE_URI")
-	fmt.Println(grpcUri, "<<<<<GRPCURIPAYMENT DI DONATIONSERV")
 	paymentConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to connect to user service: %v", err)
+		log.Fatalf("Failed to connect to payment service: %v", err)
 		return nil, err
 	}
 
