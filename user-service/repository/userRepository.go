@@ -58,11 +58,12 @@ func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporter
 	}
 
 	newUser := entity.User{
-		ID:       primitive.NewObjectID(),
-		Username: request.Username,
-		Email:    request.Email,
-		Password: string(hashedPassword),
-		Role:     request.Role,
+		ID:            primitive.NewObjectID(),
+		Username:      request.Username,
+		Email:         request.Email,
+		Password:      string(hashedPassword),
+		Role:          request.Role,
+		EmailVerified: false,
 	}
 
 	insertUser, err := userCollection.InsertOne(context.Background(), newUser)
@@ -133,6 +134,11 @@ func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, erro
 	err := userCollection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if email is verified
+	if user.EmailVerified == false {
+		return nil, fmt.Errorf("email not verified")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
@@ -219,7 +225,7 @@ func (ur *userRepository) UpdateProfile(request entity.UpdateProfileRequest) (*e
 
 func createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
 	// Get payment service URI
-	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI_DEV")
 	if paymentServiceURI == "" {
 		return fmt.Errorf("PAYMENT_SERVICE_URI is not set")
 	}
