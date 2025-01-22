@@ -7,6 +7,7 @@ require (
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/joho/godotenv v1.5.1
+	github.com/rabbitmq/amqp091-go v1.10.0
 	go.mongodb.org/mongo-driver v1.17.2
 	google.golang.org/grpc v1.69.4
 	google.golang.org/protobuf v1.36.2

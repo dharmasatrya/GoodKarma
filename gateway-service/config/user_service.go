@@ -9,7 +9,7 @@ import (
 )
 
 func InitUserServiceClient() (pb.UserServiceClient, error) {
-	grpcUri := os.Getenv("USER_SERVICE_DEV_URI")
+	grpcUri := os.Getenv("USER_SERVICE_URI")
 
 	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

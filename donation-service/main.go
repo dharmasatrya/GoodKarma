@@ -19,8 +19,6 @@ import (
 )
 
 func main() {
-	godotenv.Load()
-
 	listen, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -56,7 +54,12 @@ func main() {
 
 	donationRepository := repository.NewDonationRepository(db)
 
-	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient)
+	conn, mbChan := config.InitMessageBroker()
+	defer conn.Close()
+
+	messageBrokerService := service.NewMessageBroker(mbChan)
+
+	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient, messageBrokerService)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")

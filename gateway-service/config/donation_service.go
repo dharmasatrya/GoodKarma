@@ -9,7 +9,7 @@ import (
 )
 
 func InitDonationServiceClient() (pb.DonationServiceClient, error) {
-	grpcUri := os.Getenv("DONATION_SERVICE_DEV_URI")
+	grpcUri := os.Getenv("DONATION_SERVICE_URI")
 
 	donationConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

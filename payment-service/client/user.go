@@ -3,6 +3,7 @@ package client
 
 import (
 	"log"
+	"os"
 
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto" // Import user service proto
 	"google.golang.org/grpc"
@@ -14,7 +15,7 @@ type UserServiceClient struct {
 }
 
 func NewUserServiceClient(userServiceUrl string) (*UserServiceClient, error) {
-	grpcUri := "localhost:50051"
+	grpcUri := os.Getenv("USER_SERVICE_URI")
 	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to user service: %v", err)

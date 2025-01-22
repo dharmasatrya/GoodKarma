@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
@@ -25,20 +26,22 @@ type DonationService struct {
 	pb.UnimplementedDonationServiceServer
 	donationRepository repository.DonationRepository
 	paymentClient      *client.PaymentServiceClient
-	eventClient        *client.EventServiceClient
+  eventClient        *client.EventServiceClient
+	messageBroker      MessageBroker
 }
 
 // var jwtSecret = []byte("secret")
-
 func NewDonationService(
 	donationRepository repository.DonationRepository,
 	paymentClient *client.PaymentServiceClient,
 	eventClient *client.EventServiceClient,
+  messageBroker MessageBroker,
 ) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
 		paymentClient:      paymentClient,
 		eventClient:        eventClient,
+    messageBroker:      messageBroker,
 	}
 }
 
@@ -93,6 +96,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 			})
 
 			if err != nil {
+				fmt.Println(err)
 				return nil, status.Errorf(codes.Internal, "failed to create invoice")
 			}
 		}

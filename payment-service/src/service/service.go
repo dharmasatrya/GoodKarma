@@ -30,6 +30,7 @@ type PaymentService struct {
 	userClient        *client.UserServiceClient
 	donationClient    *client.DonationServiceClient
 	eventClient       *client.EventServiceClient
+	messageBroker     MessageBroker
 }
 
 // var jwtSecret = []byte("secret")
@@ -39,12 +40,14 @@ func NewPaymentService(
 	userClient *client.UserServiceClient,
 	donationClient *client.DonationServiceClient,
 	eventClient *client.EventServiceClient,
+	messageBroker MessageBroker,
 ) *PaymentService {
 	return &PaymentService{
 		paymentRepository: paymentRepository,
 		userClient:        userClient,
 		donationClient:    donationClient,
 		eventClient:       eventClient,
+		messageBroker:     messageBroker,
 	}
 }
 
