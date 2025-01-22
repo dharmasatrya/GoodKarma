@@ -21,6 +21,12 @@ type UpdateWalletBalanceRequest struct {
 	Type   string `json:"type" bson:"type"` //MONEYIN or MONEYOUT
 }
 
+type XenditDisbursementCallbackRequest struct {
+	ExternalID string `json:"external_id" bson:"external_id"`
+	Amount     uint32 `json:"amount" bson:"amount"`
+	Type       string `json:"type" bson:"type"` //MONEYIN or MONEYOUT
+}
+
 type UpdateInvoiceBalanceRequest struct {
 	Amount     uint32 `json:"amount" bson:"amount"`
 	Type       string `json:"type" bson:"type"` //MONEYIN or MONEYOUT
