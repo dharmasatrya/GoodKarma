@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/dharmasatrya/goodkarma/event-service/entity"
 	"github.com/dharmasatrya/goodkarma/event-service/helpers"
@@ -34,8 +33,6 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 
 	claims, ok := ctx.Value("claims").(jwt.MapClaims)
 	if !ok {
-		log.Printf("Type of ctx.Value(\"claims\"): %T", ctx.Value("claims"))   // Log the type
-		log.Printf("Value of ctx.Value(\"claims\"): %+v", ctx.Value("claims")) // Log the value
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
@@ -62,13 +59,10 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 	if err != nil {
 		log.Println(err)
 		return nil, err
-		// return nil, status.Errorf(codes.Internal, "error creating event")
 	}
 
-	id := strconv.Itoa(res.ID)
-
 	return &pb.EventResponse{
-		Id:           id,
+		Id:           uint32(res.ID),
 		UserId:       res.UserID,
 		Name:         req.Name,
 		Description:  req.Description,
@@ -84,20 +78,34 @@ func (s *EventService) UpdateDescription(ctx context.Context, req *pb.UpdateDesc
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
-	id, err := strconv.Atoi(req.GetId())
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error: id is not integer")
+	claims, ok := ctx.Value("claims").(jwt.MapClaims)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
-	res, err := s.eventRepository.EditDescription(id, req.Description)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating wallet")
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
 	}
 
-	idString := strconv.Itoa(res.ID)
+	res, err := s.eventRepository.GetEventById(int(req.GetId()))
+	if err == gorm.ErrRecordNotFound {
+		log.Println("event with ID %s not found", req.Id)
+		return nil, status.Errorf(codes.NotFound, "event with ID %s not found", req.Id)
+	}
+
+	if userID != res.UserID {
+		log.Println("You are not the owner of this event!")
+		return nil, status.Errorf(codes.Unauthenticated, "You are not the owner of this event!")
+	}
+
+	res, err = s.eventRepository.EditDescription(int(req.GetId()), req.Description)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error retrieving event: %v", err)
+	}
 
 	return &pb.UpdateDescriptionResponse{
-		Id:           idString,
+		Id:           uint32(res.ID),
 		UserId:       res.UserID,
 		Name:         res.Name,
 		Description:  res.Description,
@@ -113,11 +121,10 @@ func (s *EventService) GetAllEvent(ctx context.Context, req *pb.Empty) (*pb.Even
 		return nil, status.Errorf(codes.Internal, "error creating wallet")
 	}
 
-	// Transform events into the response format
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:           strconv.Itoa(event.ID),
+			Id:           uint32(event.ID),
 			UserId:       event.UserID,
 			Name:         event.Name,
 			Description:  event.Description,
@@ -127,19 +134,14 @@ func (s *EventService) GetAllEvent(ctx context.Context, req *pb.Empty) (*pb.Even
 		})
 	}
 
-	// Return the response with the list of events
 	return &pb.EventListResponse{
 		Events: eventResponses,
 	}, nil
 }
 
 func (s *EventService) GetEventById(ctx context.Context, req *pb.Id) (*pb.EventResponse, error) {
-	id, err := strconv.Atoi(req.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error: id is not integer")
-	}
+	event, err := s.eventRepository.GetEventById(int(req.Id))
 
-	event, err := s.eventRepository.GetEventById(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, status.Errorf(codes.NotFound, "event with ID %s not found", req.Id)
@@ -148,7 +150,7 @@ func (s *EventService) GetEventById(ctx context.Context, req *pb.Id) (*pb.EventR
 	}
 
 	return &pb.EventResponse{
-		Id:           strconv.Itoa(event.ID),
+		Id:           uint32(event.ID),
 		UserId:       event.UserID,
 		Name:         event.Name,
 		Description:  event.Description,
@@ -169,7 +171,6 @@ func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.Empty) (*pb
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
-	// Proceed with claims as jwt.MapClaims
 	userID, ok := claims["user_id"].(string)
 	if !ok {
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
@@ -183,7 +184,7 @@ func (s *EventService) GetEventByUserId(ctx context.Context, req *pb.Empty) (*pb
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:           strconv.Itoa(event.ID),
+			Id:           uint32(event.ID),
 			UserId:       event.UserID,
 			Name:         event.Name,
 			Description:  event.Description,
@@ -207,7 +208,7 @@ func (s *EventService) GetEventByCategory(ctx context.Context, req *pb.Category)
 	var eventResponses []*pb.EventResponse
 	for _, event := range *events {
 		eventResponses = append(eventResponses, &pb.EventResponse{
-			Id:           strconv.Itoa(event.ID),
+			Id:           uint32(event.ID),
 			UserId:       event.UserID,
 			Name:         event.Name,
 			Description:  event.Description,

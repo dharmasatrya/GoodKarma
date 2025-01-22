@@ -22,7 +22,7 @@ message EventRequest{
 }
 
 message EventResponse {
-    string id = 1;
+    uint32 id = 1;
     string user_id = 2;
     string name = 3;
     string description = 4;
@@ -36,12 +36,12 @@ message EventListResponse {
 }
 
 message UpdateDescriptionRequest {
-    string id = 1;
+    uint32 id = 1;
     string description = 2;
 }
 
 message UpdateDescriptionResponse {
-    string id = 1;
+    uint32 id = 1;
     string user_id = 2;
     string name = 3;
     string description = 4;
@@ -54,7 +54,7 @@ message Empty{
 }
 
 message Id{
-    string id = 1;
+    uint32 id = 1;
 }
 
 message UserId{

@@ -2,8 +2,10 @@ package controller
 
 import (
 	"gateway-service/dto"
+	"gateway-service/helpers"
 	"gateway-service/src/service"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -48,6 +50,11 @@ func (h *eventController) CreateEvent(c echo.Context) error {
 		})
 	}
 
+	if status != http.StatusCreated {
+		responseError := helpers.AssertJSONStatus(status)
+		return c.JSON(status, responseError)
+	}
+
 	return c.JSON(status, response)
 }
 
@@ -66,7 +73,16 @@ func (h *eventController) EditEvent(c echo.Context) error {
 	}
 
 	id := c.Param("id")
-	status, response := h.eventService.EditEvent(token, id, req)
+	idConv, err := strconv.Atoi(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid id params")
+	}
+
+	status, response := h.eventService.EditEvent(token, idConv, req)
+	if status != http.StatusOK {
+		responseError := helpers.AssertJSONStatus(status)
+		return c.JSON(status, responseError)
+	}
 
 	return c.JSON(status, response)
 }
@@ -91,7 +107,16 @@ func (h *eventController) GetEventById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	status, response := h.eventService.GetEventById(id)
+	idConv, err := strconv.Atoi(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid id params")
+	}
+
+	status, response := h.eventService.GetEventById(idConv)
+	if status != http.StatusOK {
+		responseError := helpers.AssertJSONStatus(status)
+		return c.JSON(status, responseError)
+	}
 
 	return c.JSON(status, response)
 }
@@ -111,6 +136,10 @@ func (h *eventController) GetAllEventByUserLogin(c echo.Context) error {
 	}
 
 	status, response := h.eventService.GetEventByUserLogin(token)
+	if status != http.StatusOK {
+		responseError := helpers.AssertJSONStatus(status)
+		return c.JSON(status, responseError)
+	}
 
 	return c.JSON(status, response)
 }
@@ -130,6 +159,10 @@ func (h *eventController) GetAllEventByCategory(c echo.Context) error {
 	}
 
 	status, response := h.eventService.GetEventByCategory(category)
+	if status != http.StatusOK {
+		responseError := helpers.AssertJSONStatus(status)
+		return c.JSON(status, responseError)
+	}
 
 	return c.JSON(status, response)
 }
