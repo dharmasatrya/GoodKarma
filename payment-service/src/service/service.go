@@ -66,6 +66,7 @@ func (s *PaymentService) CreateWallet(ctx context.Context, req *pb.CreateWalletR
 
 	res, err := s.paymentRepository.CreateWallet(wallet)
 	if err != nil {
+		fmt.Println(err)
 		return nil, status.Errorf(codes.Internal, "error creating wallet")
 	}
 
@@ -179,7 +180,7 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 	}
 
 	invoice := entity.XenditInvoiceRequest{
-		ExternalId:  req.ExternalId,
+		ExternalId:  userDetail.Id,
 		Amount:      int(req.Amount),
 		Description: req.Description,
 		Name:        userDetail.FullName,
@@ -216,8 +217,6 @@ func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) 
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
 	}
 
-	fmt.Println(userID)
-
 	wallet, errWallet := s.paymentRepository.GetWalletByUserId(ctx, userID)
 	if errWallet != nil {
 		fmt.Println(errWallet)
@@ -234,10 +233,8 @@ func (s *PaymentService) Withdraw(ctx context.Context, req *pb.WithdrawRequest) 
 		return nil, status.Errorf(codes.Internal, "cant get user detail")
 	}
 
-	fmt.Println(req.Amount, "aiJDOAISJODIJASOODSAJ")
-
 	disbursement := entity.XenditDisbursementRequest{
-		ExternalId:        "111",
+		ExternalId:        userDetail.Id,
 		Amount:            int(req.Amount),
 		BankCode:          wallet.BankCode,
 		AccountHolderName: wallet.BankAccountName,
@@ -296,5 +293,28 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 		Amount:       donation.Amount,
 		Status:       donation.Status,
 		DonationType: donation.DonationType,
+	}, nil
+}
+
+func (s *PaymentService) XenditDisbursementCallback(ctx context.Context, req *pb.XenditDisbursementCallbackRequest) (*pb.UpdateWalleetBalanceResponse, error) {
+
+	balanceShift := entity.UpdateWalleetBalanceRequest{
+		UserID: req.ExternalId,
+		Amount: req.Amount,
+		Type:   req.Type,
+	}
+
+	res, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating balance")
+	}
+
+	return &pb.UpdateWalleetBalanceResponse{
+		Id:                res.ID.Hex(),
+		UserId:            res.UserID,
+		BankAccountName:   res.BankAccountName,
+		BankCode:          res.BankCode,
+		BankAccountNumber: res.BankAccountNumber,
+		Amount:            res.Amount,
 	}, nil
 }

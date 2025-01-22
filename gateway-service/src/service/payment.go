@@ -16,9 +16,9 @@ import (
 type PaymentService interface {
 	Withdraw(token string, input dto.WithdrawRequest) (int, *dto.WithdrawResponse)
 	CreateInvoice(token string, input dto.CreateInvoiceRequest) (int, *dto.CreateInvoiceResponse)
-	UpdateWalletBalance(callbackToken string, input dto.UpdateWalletBalanceRequest) (int, *dto.Wallet)
 	GetWalletByUserId(token string) (int, *dto.Wallet)
 	UpdateInvoiceWalletBalance(callbackToken string, input dto.UpdateInvoiceBalanceRequest) (int, *dto.Donation)
+	UpdateDisbursementWalletBalance(callbackToken string, input dto.XenditDisbursementCallbackRequest) (int, *dto.Wallet)
 }
 
 type paymentService struct {
@@ -63,7 +63,7 @@ func (u *paymentService) CreateInvoice(token string, input dto.CreateInvoiceRequ
 	return http.StatusOK, &response
 }
 
-func (u *paymentService) UpdateWalletBalance(callbackToken string, input dto.UpdateWalletBalanceRequest) (int, *dto.Wallet) {
+func (u *paymentService) UpdateDisbursementWalletBalance(callbackToken string, input dto.XenditDisbursementCallbackRequest) (int, *dto.Wallet) {
 
 	// Verify the token matches your expected token from Xendit
 	expectedToken := os.Getenv("XENDIT_CALLBACK_TOKEN")
@@ -71,10 +71,12 @@ func (u *paymentService) UpdateWalletBalance(callbackToken string, input dto.Upd
 		return http.StatusForbidden, nil
 	}
 
-	res, err := u.Client.UpdateWalletBalance(context.Background(), &pb.UpdateWalletBalanceRequest{
-		Amount: input.Amount,
-		Type:   input.Type,
+	res, err := u.Client.XenditDisbursementCallback(context.Background(), &pb.XenditDisbursementCallbackRequest{
+		ExternalId: input.ExternalID,
+		Amount:     input.Amount,
+		Type:       input.Type,
 	})
+
 	if err != nil {
 		log.Fatalf("error while create request %v", err)
 	}

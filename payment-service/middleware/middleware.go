@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -15,12 +16,13 @@ import (
 )
 
 var protectedMethods = map[string]bool{
-	"/payment.PaymentService/CreateWallet":          false,
-	"/payment.PaymentService/UpdateWalletBalance":   true,
-	"/payment.PaymentService/Withdraw":              true,
-	"/payment.PaymentService/CreateInvoice":         true,
-	"/payment.PaymentService/GetWalletByUserId":     true,
-	"/payment.PaymentService/XenditInvoiceCallback": false,
+	"/payment.PaymentService/CreateWallet":                    false,
+	"/payment.PaymentService/UpdateWalletBalance":             true,
+	"/payment.PaymentService/Withdraw":                        true,
+	"/payment.PaymentService/CreateInvoice":                   true,
+	"/payment.PaymentService/GetWalletByUserId":               true,
+	"/payment.PaymentService/XenditInvoiceCallback":           false,
+	"/payment.PaymentService/UpdateDisbursementWalletBalance": false,
 }
 
 func UnaryAuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -77,7 +79,7 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		// Use the same secret as your auth service
-		return []byte("your-256-bit-secret"), nil // Replace with your actual secret
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil // Replace with your actual secret
 	})
 
 	if err != nil {

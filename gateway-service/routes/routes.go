@@ -81,6 +81,7 @@ func NewRouter() *echo.Echo {
 	payment.POST("/withdraw", paymentController.Withdraw)
 	payment.POST("/invoice", paymentController.XenditInvoiceCallback)
 	payment.POST("/xenditcallback/invoice", paymentController.XenditInvoiceCallback)
+	payment.POST("/xenditcallback/disbursement", paymentController.XenditDisbursementCallback)
 
 	return e
 }
