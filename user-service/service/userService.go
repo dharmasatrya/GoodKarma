@@ -48,10 +48,12 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		Photo:    req.Photo,
 	}
 
+	// Validate the request
 	if err := us.validateCreateUserRequest(payload); err != nil {
 		return nil, err
 	}
 
+	// Create the user
 	result, err := us.userRepository.CreateUserSupporter(payload)
 
 	if err != nil {
@@ -59,21 +61,11 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 	}
 
 	tokenString, err := us.generateJWTToken(result)
-	baseUrl := os.Getenv("BASE_URL")
 
-	link := fmt.Sprintf("%v/users/email/verify/%v", baseUrl, tokenString)
+	// Send email verification
+	err = us.sendEmail(req.Email, tokenString)
 
-	dataJsonRequest := entity.UserRegistData{
-		Email: req.Email,
-		Link:  link,
-	}
-
-	dataJson, err := json.Marshal(dataJsonRequest)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -122,12 +114,14 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		return nil, err
 	}
 
+	// Create the user
 	result, err := us.userRepository.CreateUserCoordinator(payload)
 
 	if err != nil {
 		return nil, err
 	}
 
+	// Create wallet
 	err = us.createWallet(result.ID.Hex(), reqBank)
 
 	if err != nil {
@@ -136,17 +130,10 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 
 	tokenString, err := us.generateJWTToken(result)
 
-	dataJsonRequest := entity.UserRegistData{
-		Email: req.Email,
-		Link:  tokenString,
-	}
+	// Send email verification
+	err = us.sendEmail(req.Email, tokenString)
 
-	dataJson, err := json.Marshal(dataJsonRequest)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -341,4 +328,26 @@ func (us *UserService) VerifyEmail(ctx context.Context, req *pb.VerifyEmailReque
 	}
 
 	return &pb.Empty{}, nil
+}
+
+func (us *UserService) sendEmail(email, tokenString string) error {
+	baseUrl := os.Getenv("BASE_URL")
+
+	link := fmt.Sprintf("%v/users/email/verify/%v", baseUrl, tokenString)
+
+	dataJsonRequest := entity.UserRegistData{
+		Email: email,
+		Link:  link,
+	}
+
+	dataJson, err := json.Marshal(dataJsonRequest)
+	if err != nil {
+		return err
+	}
+
+	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
+		return err
+	}
+
+	return nil
 }
