@@ -41,7 +41,7 @@ func main() {
 	messageBrokerService := service.NewMessageBroker(mbChan)
 
 	// Get payment service URI
-	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI_DEV")
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI")
 	if paymentServiceURI == "" {
 		log.Fatalf("PAYMENT_SERVICE_URI is not set")
 	}

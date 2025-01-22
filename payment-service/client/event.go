@@ -14,7 +14,6 @@ type EventServiceClient struct {
 }
 
 func NewEventServiceClient(eventServiceUrl string) (*EventServiceClient, error) {
-	// grpcUri := "localhost:50055"
 	grpcUri := os.Getenv("EVENT_SERVICE_URI")
 	eventConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
