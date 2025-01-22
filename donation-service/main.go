@@ -46,6 +46,12 @@ func main() {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
+	eventServiceUrl := "localhost:50053"
+	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
+	if err != nil {
+		log.Fatalf("Failed to create user service client: %v", err)
+	}
+
 	donationRepository := repository.NewDonationRepository(db)
 
 	conn, mbChan := config.InitMessageBroker()
@@ -53,7 +59,7 @@ func main() {
 
 	messageBrokerService := service.NewMessageBroker(mbChan)
 
-	donationService := service.NewDonationService(donationRepository, paymentClient, messageBrokerService)
+	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient, messageBrokerService)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")

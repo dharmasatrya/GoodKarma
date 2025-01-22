@@ -56,6 +56,7 @@ func NewRouter() *echo.Echo {
 		user.POST("/register/coordinators", userController.RegisterUserCoordinator)
 		user.POST("/login", userController.Login)
 		user.GET("/:id", userController.GetUserById)
+		user.GET("/email/verify/:token", userController.VerifyEmail)
 	}
 
 	event := e.Group("/events")

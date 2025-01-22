@@ -10,7 +10,10 @@ import (
 	"strings"
 	"time"
 
+	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
+
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
+	"github.com/dharmasatrya/goodkarma/user-service/helper"
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/repository"
 	"github.com/golang-jwt/jwt/v5"
@@ -21,13 +24,15 @@ import (
 type UserService struct {
 	userRepository repository.UserRepository
 	messageBroker  MessageBroker
+	paymentClient  paymentPb.PaymentServiceClient
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker) *UserService {
+func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker, paymentClient paymentPb.PaymentServiceClient) *UserService {
 	return &UserService{
 		userRepository: userRepository,
 		messageBroker:  messageBroker,
+		paymentClient:  paymentClient,
 	}
 }
 
@@ -43,10 +48,12 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		Photo:    req.Photo,
 	}
 
+	// Validate the request
 	if err := us.validateCreateUserRequest(payload); err != nil {
 		return nil, err
 	}
 
+	// Create the user
 	result, err := us.userRepository.CreateUserSupporter(payload)
 
 	if err != nil {
@@ -55,17 +62,10 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 
 	tokenString, err := us.generateJWTToken(result)
 
-	dataJsonRequest := entity.UserRegistData{
-		Email: req.Email,
-		Link:  tokenString,
-	}
+	// Send email verification
+	err = us.sendEmail(req.Email, tokenString)
 
-	dataJson, err := json.Marshal(dataJsonRequest)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -114,7 +114,15 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		return nil, err
 	}
 
+	// Create the user
 	result, err := us.userRepository.CreateUserCoordinator(payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Create wallet
+	err = us.createWallet(result.ID.Hex(), reqBank)
 
 	if err != nil {
 		return nil, err
@@ -122,17 +130,10 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 
 	tokenString, err := us.generateJWTToken(result)
 
-	dataJsonRequest := entity.UserRegistData{
-		Email: req.Email,
-		Link:  tokenString,
-	}
+	// Send email verification
+	err = us.sendEmail(req.Email, tokenString)
 
-	dataJson, err := json.Marshal(dataJsonRequest)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -293,4 +294,60 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (us *UserService) createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
+	// Make the gRPC call to create a wallet
+	_, err := us.paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
+		UserId:            userID,
+		BankAccountName:   request.AccountHolderName,
+		BankCode:          request.BankCode,
+		BankAccountNumber: request.BankAccountNumber,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create wallet: %w", err)
+	}
+
+	return nil
+}
+
+func (us *UserService) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.Empty, error) {
+	claims, err := helper.GetClaims(req.Token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userID := claims["user_id"].(string)
+
+	err = us.userRepository.VerifyEmail(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (us *UserService) sendEmail(email, tokenString string) error {
+	baseUrl := os.Getenv("BASE_URL")
+
+	link := fmt.Sprintf("%v/users/email/verify/%v", baseUrl, tokenString)
+
+	dataJsonRequest := entity.UserRegistData{
+		Email: email,
+		Link:  link,
+	}
+
+	dataJson, err := json.Marshal(dataJsonRequest)
+	if err != nil {
+		return err
+	}
+
+	if err := us.messageBroker.PublishRegistMessage(dataJson); err != nil {
+		return err
+	}
+
+	return nil
 }

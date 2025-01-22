@@ -12,7 +12,7 @@ func SendRegistrasiEmailNotification(data entity.UserRegistData) {
 	confirmationLink := data.Link
 
 	subject := "Register GoodKarma Successfully"
-	content := fmt.Sprintf("Your register in our website is success! Please use this link %v to activate your account!", confirmationLink)
+	content := fmt.Sprintf("Your register in our website is success! Please use this link to activate your account! <a href='%s'>click here</a>", confirmationLink)
 	utils.SendEmailNotification(to, subject, content)
 }
 

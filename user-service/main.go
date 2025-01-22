@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
+
+	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/dharmasatrya/goodkarma/user-service/config"
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
@@ -12,6 +15,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -36,8 +40,24 @@ func main() {
 
 	messageBrokerService := service.NewMessageBroker(mbChan)
 
+	// Get payment service URI
+	paymentServiceURI := os.Getenv("PAYMENT_SERVICE_URI_DEV")
+	if paymentServiceURI == "" {
+		log.Fatalf("PAYMENT_SERVICE_URI is not set")
+	}
+
+	// Create gRPC connection
+	grpcConn, err := grpc.NewClient(paymentServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to payment service: %v", err)
+	}
+	defer grpcConn.Close()
+
+	// Initialize payment client
+	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
+
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository, messageBrokerService)
+	userService := service.NewUserService(userRepository, messageBrokerService, paymentClient)
 
 	pb.RegisterUserServiceServer(server, userService)
 

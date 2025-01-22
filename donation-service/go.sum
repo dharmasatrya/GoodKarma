@@ -1,7 +1,5 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee h1:ZSjd7q5t7TytovJ005XGYkzBJPQ4O9Jg9bnN23/MFR0=
-github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee/go.mod h1:VpyTiGfIXuW4DFGDKJG0/0Hcp4PEYfNbIcCMLsA+M58=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
 github.com/go-logr/logr v1.4.2/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=

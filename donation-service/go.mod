@@ -3,6 +3,7 @@ module github.com/dharmasatrya/goodkarma/donation-service
 go 1.23.5
 
 require (
+	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/joho/godotenv v1.5.1
@@ -27,3 +28,7 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 )
+
+replace github.com/dharmasatrya/goodkarma/payment-service => ../payment-service
+
+replace github.com/dharmasatrya/goodkarma/event-service => ../event-service

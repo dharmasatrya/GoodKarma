@@ -263,12 +263,12 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 		Status: "COMPLETED",
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error updating balance")
+		return nil, status.Errorf(codes.Internal, "error fetching donation")
 	}
 
 	eventIdToInt, err := strconv.Atoi(donation.EventId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error updating balance")
+		return nil, status.Errorf(codes.Internal, "error converting event id to int")
 	}
 	eventID := uint32(eventIdToInt)
 
@@ -277,15 +277,19 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 		return nil, status.Errorf(codes.Internal, "error fetching event")
 	}
 
+	charged, err := s.ChargeFees(ctx, &pb.ChargeFeesRequest{
+		UserId: event.UserId,
+		Amount: req.Amount,
+	})
+
 	balanceShift := entity.UpdateWalleetBalanceRequest{
 		UserID: event.UserId,
-		Amount: req.Amount,
+		Amount: charged.AmountAfterFees,
 		Type:   "money_in",
 	}
 
 	_, err1 := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
 	if err1 != nil {
-		fmt.Println(err1, ",,,,,,,,,,")
 		return nil, status.Errorf(codes.Internal, "error updating balance")
 	}
 
@@ -319,5 +323,24 @@ func (s *PaymentService) XenditDisbursementCallback(ctx context.Context, req *pb
 		BankCode:          res.BankCode,
 		BankAccountNumber: res.BankAccountNumber,
 		Amount:            res.Amount,
+	}, nil
+}
+
+func (s *PaymentService) ChargeFees(ctx context.Context, req *pb.ChargeFeesRequest) (*pb.ChargeFeesResponse, error) {
+
+	balanceShift := entity.UpdateWalleetBalanceRequest{
+		UserID: "masterAccountID",
+		Amount: 2000,
+		Type:   "money_in",
+	}
+
+	_, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating balance to master account")
+	}
+
+	return &pb.ChargeFeesResponse{
+		UserId:          req.UserId,
+		AmountAfterFees: req.Amount - 2000,
 	}, nil
 }
