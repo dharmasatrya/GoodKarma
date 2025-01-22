@@ -9,7 +9,7 @@ import (
 )
 
 func InitPaymentServiceClient() (pb.PaymentServiceClient, error) {
-	grpcUri := os.Getenv("PAYMENT_SERVICE_DEV_URI")
+	grpcUri := os.Getenv("PAYMENT_SERVICE_URI")
 
 	paymentConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

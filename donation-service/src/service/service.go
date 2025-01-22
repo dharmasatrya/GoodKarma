@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/entity"
@@ -84,6 +85,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 			})
 
 			if err != nil {
+				fmt.Println(err)
 				return nil, status.Errorf(codes.Internal, "failed to create invoice")
 			}
 		}

@@ -10,6 +10,6 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /app/donation-service/main .
 COPY --from=builder /app/donation-service/config ./config
-COPY --from=builder /app/payment-service/.env ./.env 
+COPY --from=builder /app/donation-service/.env ./.env 
 EXPOSE 50052
 CMD ["./main"]
