@@ -15,7 +15,8 @@ func SendEmailNotification(to, subject, content string) {
 	m.SetHeader("From", from)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/plain", content)
+	// m.SetBody("text/plain", content)
+	m.SetBody("text/html", content)
 
 	// Set up the SMTP server
 	d := gomail.NewDialer("smtp.gmail.com", 587, from, password)
