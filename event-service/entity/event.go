@@ -7,7 +7,7 @@ type Event struct {
 	UserID       string    `json:"user_id"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
-	DateStart    time.Time `json:"date_start`
+	DateStart    time.Time `json:"date_start"`
 	DateEnd      time.Time `json:"date_end"`
 	DonationType string    `json:"donation_type"`
 }

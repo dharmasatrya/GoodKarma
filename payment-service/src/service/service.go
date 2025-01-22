@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	donationpb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 	eventpb "github.com/dharmasatrya/goodkarma/event-service/proto"
@@ -265,7 +266,13 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 		return nil, status.Errorf(codes.Internal, "error updating balance")
 	}
 
-	event, eventErr := s.eventClient.Client.GetEventById(ctx, &eventpb.Id{Id: donation.EventId})
+	eventIdToInt, err := strconv.Atoi(donation.EventId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating balance")
+	}
+	eventID := uint32(eventIdToInt)
+
+	event, eventErr := s.eventClient.Client.GetEventById(ctx, &eventpb.Id{Id: eventID})
 	if eventErr != nil {
 		return nil, status.Errorf(codes.Internal, "error fetching event")
 	}
