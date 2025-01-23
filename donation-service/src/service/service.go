@@ -17,6 +17,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -46,12 +47,13 @@ func NewDonationService(
 }
 
 func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDonationRequest) (*pb.CreateDonationResponse, error) {
+	// Get metadata and validate auth
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
-	// Get claims from context that was set in auth middleware
+	// Get claims from context
 	claims, ok := ctx.Value("claims").(jwt.MapClaims)
 	if !ok {
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
@@ -63,52 +65,93 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
 	}
 
-	donation := entity.Donation{
-		ID:           primitive.NewObjectID(),
-		UserID:       userID,
-		EventID:      req.EventId,
-		Amount:       req.Amount,
-		Status:       req.Status,
-		DonationType: req.DonationType,
-	}
-
-	res, err := s.donationRepository.CreateDonation(donation)
+	// Start a MongoDB session for transaction
+	session, err := s.donationRepository.StartSession()
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error creating donation")
+		return nil, status.Errorf(codes.Internal, "failed to start session: %v", err)
+	}
+	defer session.EndSession(ctx)
+
+	// Start transaction
+	var donation *entity.Donation
+	err = session.StartTransaction()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to start transaction: %v", err)
 	}
 
-	if req.DonationType == "uang" {
-		// Forward the authorization token to payment service
-		token := md.Get("authorization")
-		if len(token) > 0 {
-			// Create new outgoing context with the token
+	// Execute operations within transaction
+	err = mongo.WithSession(ctx, session, func(sessCtx mongo.SessionContext) error {
+		// 1. Create donation
+		newDonation := entity.Donation{
+			ID:           primitive.NewObjectID(),
+			UserID:       userID,
+			EventID:      req.EventId,
+			Amount:       req.Amount,
+			Status:       "pending", // Set initial status as pending
+			DonationType: req.DonationType,
+		}
+
+		// 2. If it's a money donation, create invoice first
+		if req.DonationType == "uang" {
+			token := md.Get("authorization")
+			if len(token) == 0 {
+				return status.Errorf(codes.Unauthenticated, "authorization token not found")
+			}
+
+			// Create outgoing context with token
 			outgoingMD := metadata.New(map[string]string{
 				"authorization": token[0],
 			})
-			outgoingCtx := metadata.NewOutgoingContext(ctx, outgoingMD)
+			outgoingCtx := metadata.NewOutgoingContext(sessCtx, outgoingMD)
 
-			// Use the new context for the payment service call
+			// Create invoice using the donation ID we just generated
 			_, err := s.paymentClient.Client.CreateInvoice(outgoingCtx, &proto.CreateInvoiceRequest{
 				UserId:      userID,
-				ExternalId:  res.ID.Hex(),
+				ExternalId:  newDonation.ID.Hex(),
 				Amount:      req.Amount,
 				Description: "Goodkarma donation",
 			})
-
 			if err != nil {
-				fmt.Println(err)
-				return nil, status.Errorf(codes.Internal, "failed to create invoice")
+				// Roll back transaction by aborting
+				if abortErr := session.AbortTransaction(sessCtx); abortErr != nil {
+					return status.Errorf(codes.Internal, "failed to abort transaction: %v", abortErr)
+				}
+				return status.Errorf(codes.Internal, "failed to create invoice: %v", err)
 			}
 		}
+
+		// 3. Save donation to database
+		savedDonation, err := s.donationRepository.CreateDonationWithSession(sessCtx, newDonation)
+		if err != nil {
+			// Roll back transaction by aborting
+			if abortErr := session.AbortTransaction(sessCtx); abortErr != nil {
+				return status.Errorf(codes.Internal, "failed to abort transaction: %v", abortErr)
+			}
+			return status.Errorf(codes.Internal, "error creating donation: %v", err)
+		}
+
+		donation = savedDonation
+
+		// 4. Commit the transaction
+		if err := session.CommitTransaction(sessCtx); err != nil {
+			return status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
+	// Return response
 	return &pb.CreateDonationResponse{
-		Id:           res.ID.Hex(),
-		UserId:       res.UserID,
-		EventId:      res.EventID,
-		Amount:       res.Amount,
-		Status:       res.Status,
-		DonationType: res.DonationType,
+		Id:           donation.ID.Hex(),
+		UserId:       donation.UserID,
+		EventId:      donation.EventID,
+		Amount:       donation.Amount,
+		Status:       donation.Status,
+		DonationType: donation.DonationType,
 	}, nil
 }
 

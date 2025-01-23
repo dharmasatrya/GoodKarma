@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/entity"
@@ -15,6 +16,8 @@ type DonationRepository interface {
 	UpdateDonationStatus(input entity.Donation) (*entity.Donation, error)
 	GetDonationsByUserId(userId string) ([]entity.Donation, error)
 	GetDonationsByEventId(eventId string) ([]entity.Donation, error)
+	CreateDonationWithSession(ctx context.Context, donation entity.Donation) (*entity.Donation, error)
+	StartSession() (mongo.Session, error)
 }
 
 type donationRepository struct {
@@ -108,4 +111,16 @@ func (r *donationRepository) GetDonationsByEventId(eventId string) ([]entity.Don
 	}
 
 	return donations, nil
+}
+
+func (r *donationRepository) CreateDonationWithSession(ctx context.Context, donation entity.Donation) (*entity.Donation, error) {
+	_, err := r.db.InsertOne(ctx, donation)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert donation: %w", err)
+	}
+	return &donation, nil
+}
+
+func (r *donationRepository) StartSession() (mongo.Session, error) {
+	return r.db.Database().Client().StartSession()
 }
