@@ -7,6 +7,7 @@ import (
 
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -41,34 +42,25 @@ func NewUserRepository(DB *mongo.Database) UserRepository {
 	}
 }
 
-func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporterRequest) (*entity.User, error) {
+func (ur *userRepository) createBaseUser(request entity.CreateUserSupporterRequest) (*entity.User, error) {
 	userCollection := ur.GetUserCollection()
 	profileCollection := ur.GetProfileCollection()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-
 	if err != nil {
 		return nil, err
 	}
-
-	if err := ur.validateCreateUser(request); err != nil {
-		return nil, err
-	}
-
-	referralCode := strings.ToUpper(request.Username)
 
 	newUser := entity.User{
 		ID:            primitive.NewObjectID(),
 		Username:      request.Username,
 		Email:         request.Email,
 		Password:      string(hashedPassword),
-		Role:          "supporter",
+		Role:          request.Role,
 		EmailVerified: false,
-		ReferralCode:  referralCode,
 	}
 
 	insertUser, err := userCollection.InsertOne(context.Background(), newUser)
-
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +75,6 @@ func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporter
 	}
 
 	_, err = profileCollection.InsertOne(context.Background(), profile)
-
 	if err != nil {
 		return nil, err
 	}
@@ -91,33 +82,55 @@ func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporter
 	return &newUser, nil
 }
 
-func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
-	var user *entity.CreateUserSupporterRequest
+func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporterRequest) (*entity.User, error) {
+	if err := ur.validateCreateUser(request); err != nil {
+		return nil, err
+	}
 
-	user = &entity.CreateUserSupporterRequest{
+	referralCode := strings.ToUpper(request.Username)
+
+	user, err := ur.createBaseUser(request)
+	if err != nil {
+		return nil, err
+	}
+
+	user.ReferralCode = &referralCode
+
+	userCollection := ur.GetUserCollection()
+	_, err = userCollection.UpdateOne(
+		context.Background(),
+		bson.M{"_id": user.ID},
+		bson.M{"$set": bson.M{"referral_code": referralCode}},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
+	baseRequest := entity.CreateUserSupporterRequest{
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
-		Role:     "coordinator",
+		Role:     request.Role,
 		FullName: request.FullName,
 		Address:  request.Address,
 		Phone:    request.Phone,
 		Photo:    request.Photo,
 	}
 
-	res, err := ur.CreateUserSupporter(*user)
+	if err := ur.validateCreateUser(baseRequest); err != nil {
+		return nil, err
+	}
 
+	user, err := ur.createBaseUser(baseRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	// err = createWallet(res.ID.Hex(), request)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return res, nil
+	return user, nil
 }
 
 func (ur *userRepository) Login(request entity.LoginRequest) (*entity.User, error) {
