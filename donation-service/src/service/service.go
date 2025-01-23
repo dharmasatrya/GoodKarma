@@ -26,7 +26,7 @@ type DonationService struct {
 	pb.UnimplementedDonationServiceServer
 	donationRepository repository.DonationRepository
 	paymentClient      *client.PaymentServiceClient
-  eventClient        *client.EventServiceClient
+	eventClient        *client.EventServiceClient
 	messageBroker      MessageBroker
 }
 
@@ -35,13 +35,13 @@ func NewDonationService(
 	donationRepository repository.DonationRepository,
 	paymentClient *client.PaymentServiceClient,
 	eventClient *client.EventServiceClient,
-  messageBroker MessageBroker,
+	messageBroker MessageBroker,
 ) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
 		paymentClient:      paymentClient,
 		eventClient:        eventClient,
-    messageBroker:      messageBroker,
+		messageBroker:      messageBroker,
 	}
 }
 
@@ -145,10 +145,15 @@ func (s *DonationService) UpdateDonationStatus(ctx context.Context, req *pb.Upda
 		return nil, status.Errorf(codes.Internal, "error fetching event")
 	}
 
-	s.paymentClient.Client.ChargeFees(ctx, &paymentpb.ChargeFeesRequest{
+	charged, err1 := s.paymentClient.Client.ChargeFees(ctx, &paymentpb.ChargeFeesRequest{
 		UserId: event.UserId,
 		Amount: 2000,
 	})
+
+	fmt.Println("ngurang", charged)
+	if err1 != nil {
+		fmt.Println(err)
+	}
 
 	return &pb.UpdateDonationStatusResponse{
 		Id:           updatedDonation.ID.Hex(),

@@ -67,10 +67,11 @@ func (r *paymentRepository) GetWalletByUserId(ctx context.Context, userId string
 func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error) {
 	var wallet entity.Wallet
 
+	fmt.Println(input.UserID)
+
 	err := r.db.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("error 62", err, input.UserID)
 			return nil, fmt.Errorf("wallet not found")
 		}
 	}
@@ -92,7 +93,6 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	).Decode(&updatedWallet)
 
 	if err1 != nil {
-		fmt.Println("error 82", err1)
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("wallet not found")
 		}

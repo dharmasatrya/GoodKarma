@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 
 	donationpb "github.com/dharmasatrya/goodkarma/donation-service/proto"
@@ -280,7 +281,10 @@ func (s *PaymentService) XenditInvoiceCallback(ctx context.Context, req *pb.Xend
 	charged, err := s.ChargeFees(ctx, &pb.ChargeFeesRequest{
 		UserId: event.UserId,
 		Amount: req.Amount,
+		Type:   "uang",
 	})
+
+	fmt.Println(charged.AmountAfterFees, "<<<<<<<<<<<<")
 
 	balanceShift := entity.UpdateWalleetBalanceRequest{
 		UserID: event.UserId,
@@ -329,7 +333,7 @@ func (s *PaymentService) XenditDisbursementCallback(ctx context.Context, req *pb
 func (s *PaymentService) ChargeFees(ctx context.Context, req *pb.ChargeFeesRequest) (*pb.ChargeFeesResponse, error) {
 
 	balanceShift := entity.UpdateWalleetBalanceRequest{
-		UserID: "masterAccountID",
+		UserID: os.Getenv("MASTER_ACCOUNT_ID"),
 		Amount: 2000,
 		Type:   "money_in",
 	}
@@ -337,6 +341,19 @@ func (s *PaymentService) ChargeFees(ctx context.Context, req *pb.ChargeFeesReque
 	_, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error updating balance to master account")
+	}
+
+	if req.Type != "uang" {
+		balanceShift := entity.UpdateWalleetBalanceRequest{
+			UserID: req.UserId,
+			Amount: 2000,
+			Type:   "money_out",
+		}
+
+		_, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "error updating balance to master account")
+		}
 	}
 
 	return &pb.ChargeFeesResponse{
