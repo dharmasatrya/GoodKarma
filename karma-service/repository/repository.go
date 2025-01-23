@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/dharmasatrya/goodkarma/karma-service/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,6 +18,7 @@ type KarmaRepository interface {
 	CreateReferralLog(context.Context, entity.ReferralLog) error
 	UpdateKarmaAmount(context.Context, entity.UpdateKarmaRequest) error
 	GetUserByReferralCode(context.Context, string) (string, error)
+	ExchangeReward(context.Context, entity.ExchangeRewardRequest) error
 }
 
 type karmaRepository struct {
@@ -35,6 +37,14 @@ func (r *karmaRepository) GetReferralLogsCollection() *mongo.Collection {
 	return r.db.Collection("referral_logs")
 }
 
+func (r *karmaRepository) GetKarmaTrxCollection() *mongo.Collection {
+	return r.db.Collection("karma_tranasctions")
+}
+
+func (r *karmaRepository) GetKarmaRewardCollection() *mongo.Collection {
+	return r.db.Collection("karma_rewards")
+}
+
 func (r *karmaRepository) CreateKarma(ctx context.Context, payload entity.CreateKarmaRequest) (*entity.Karma, error) {
 	karmaCollection := r.GetKarmaCollection()
 
@@ -49,6 +59,26 @@ func (r *karmaRepository) CreateKarma(ctx context.Context, payload entity.Create
 	_, err = karmaCollection.InsertOne(ctx, karma)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create karma: %v", err)
+	}
+
+	return &karma, nil
+}
+
+func (r *karmaRepository) GetKarmaByUserID(ctx context.Context, userID string) (*entity.Karma, error) {
+	karmaCollection := r.GetKarmaCollection()
+
+	userIDObj, err := primitive.ObjectIDFromHex(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var karma entity.Karma
+
+	err = karmaCollection.FindOne(ctx, bson.M{"user_id": userIDObj}).Decode(&karma)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get karma: %v", err)
 	}
 
 	return &karma, nil
@@ -119,4 +149,63 @@ func (r *karmaRepository) GetUserByReferralCode(ctx context.Context, referralCod
 	}
 
 	return karma.UserID.Hex(), nil
+}
+
+func (r *karmaRepository) ExchangeReward(ctx context.Context, payload entity.ExchangeRewardRequest) error {
+	karmaTrxCollection := r.GetKarmaTrxCollection()
+	karmaRewardCollection := r.GetKarmaRewardCollection()
+
+	var karmaReward entity.KarmaReward
+
+	// Get karma amount
+	karma, err := r.GetKarmaByUserID(ctx, payload.UserID)
+
+	if err != nil {
+		return err
+	}
+
+	// Get karma reward
+	err = karmaRewardCollection.FindOne(ctx, bson.M{"_id": payload.KarmaRewardID}).Decode(&karmaReward)
+
+	if err != nil {
+		return err
+	}
+
+	// Check if karma is sufficient
+	if karma.Amount < karmaReward.Amount {
+		return fmt.Errorf("insufficient karma")
+	}
+
+	userID, err := primitive.ObjectIDFromHex(payload.UserID)
+
+	if err != nil {
+		return err
+	}
+
+	karmaRewardID, err := primitive.ObjectIDFromHex(payload.KarmaRewardID)
+
+	if err != nil {
+		return err
+	}
+
+	karmaTrx := entity.KarmaTransaction{
+		ID:            primitive.NewObjectID(),
+		UserID:        userID,
+		KarmaRewardID: karmaRewardID,
+		CreatedAt:     time.Now(),
+	}
+
+	_, err = karmaTrxCollection.InsertOne(ctx, karmaTrx)
+
+	if err != nil {
+		return err
+	}
+
+	// Deduct karma
+	err = r.UpdateKarmaAmount(ctx, entity.UpdateKarmaRequest{
+		UserID: payload.UserID,
+		Amount: -karmaReward.Amount,
+	})
+
+	return nil
 }

@@ -268,6 +268,9 @@ func (ur *userRepository) GetUserByReferralCode(referralCode string) (string, er
 	err := userCollection.FindOne(context.Background(), primitive.M{"referral_code": referralCode}).Decode(&user)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return "", fmt.Errorf("referral code not found")
+		}
 		return "", err
 	}
 

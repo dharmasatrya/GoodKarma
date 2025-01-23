@@ -320,16 +320,16 @@ func (us *UserService) CreateWallet(userID string, request entity.CreateUserCoor
 
 // processReferral handles all referral-related logic.
 func (us *UserService) ProcessReferral(ctx context.Context, referralCode, refereeUserID string) error {
-	// Get referral count
-	referralCount, err := us.karmaClient.GetReferralCount(ctx, &karmaPb.GetReferralCountRequest{
-		ReferralCode: referralCode,
-	})
+	// Get referrer user ID
+	referrerUserID, err := us.userRepository.GetUserByReferralCode(referralCode)
 	if err != nil {
 		return err
 	}
 
-	// Get referrer user ID
-	referrerUserID, err := us.userRepository.GetUserByReferralCode(referralCode)
+	// Get referral count
+	referralCount, err := us.karmaClient.GetReferralCount(ctx, &karmaPb.GetReferralCountRequest{
+		ReferralCode: referralCode,
+	})
 	if err != nil {
 		return err
 	}

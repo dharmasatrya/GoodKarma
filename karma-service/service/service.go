@@ -89,3 +89,17 @@ func (s *KarmaService) GetUserByReferralCode(ctx context.Context, req *pb.GetUse
 		UserId: userID,
 	}, nil
 }
+
+func (s *KarmaService) ExchangeReward(ctx context.Context, req *pb.ExchangeRewardRequest) (*pb.Empty, error) {
+	exchange := entity.ExchangeRewardRequest{
+		UserID:        req.UserId,
+		KarmaRewardID: req.KarmaRewardId,
+	}
+
+	err := s.KarmaRepository.ExchangeReward(ctx, exchange)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error exchanging reward")
+	}
+
+	return &pb.Empty{}, nil
+}

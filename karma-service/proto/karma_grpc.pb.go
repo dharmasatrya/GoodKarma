@@ -24,6 +24,7 @@ const (
 	KarmaService_CreateReferralLog_FullMethodName     = "/karma.KarmaService/CreateReferralLog"
 	KarmaService_UpdateKarmaAmount_FullMethodName     = "/karma.KarmaService/UpdateKarmaAmount"
 	KarmaService_GetUserByReferralCode_FullMethodName = "/karma.KarmaService/GetUserByReferralCode"
+	KarmaService_ExchangeReward_FullMethodName        = "/karma.KarmaService/ExchangeReward"
 )
 
 // KarmaServiceClient is the client API for KarmaService service.
@@ -35,6 +36,7 @@ type KarmaServiceClient interface {
 	CreateReferralLog(ctx context.Context, in *CreateReferralLogRequest, opts ...grpc.CallOption) (*Empty, error)
 	UpdateKarmaAmount(ctx context.Context, in *UpdateKarmaAmountRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error)
+	ExchangeReward(ctx context.Context, in *ExchangeRewardRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type karmaServiceClient struct {
@@ -95,6 +97,16 @@ func (c *karmaServiceClient) GetUserByReferralCode(ctx context.Context, in *GetU
 	return out, nil
 }
 
+func (c *karmaServiceClient) ExchangeReward(ctx context.Context, in *ExchangeRewardRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, KarmaService_ExchangeReward_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KarmaServiceServer is the server API for KarmaService service.
 // All implementations must embed UnimplementedKarmaServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type KarmaServiceServer interface {
 	CreateReferralLog(context.Context, *CreateReferralLogRequest) (*Empty, error)
 	UpdateKarmaAmount(context.Context, *UpdateKarmaAmountRequest) (*Empty, error)
 	GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error)
+	ExchangeReward(context.Context, *ExchangeRewardRequest) (*Empty, error)
 	mustEmbedUnimplementedKarmaServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedKarmaServiceServer) UpdateKarmaAmount(context.Context, *Updat
 }
 func (UnimplementedKarmaServiceServer) GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByReferralCode not implemented")
+}
+func (UnimplementedKarmaServiceServer) ExchangeReward(context.Context, *ExchangeRewardRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExchangeReward not implemented")
 }
 func (UnimplementedKarmaServiceServer) mustEmbedUnimplementedKarmaServiceServer() {}
 func (UnimplementedKarmaServiceServer) testEmbeddedByValue()                      {}
@@ -240,6 +256,24 @@ func _KarmaService_GetUserByReferralCode_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KarmaService_ExchangeReward_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExchangeRewardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).ExchangeReward(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_ExchangeReward_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).ExchangeReward(ctx, req.(*ExchangeRewardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KarmaService_ServiceDesc is the grpc.ServiceDesc for KarmaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var KarmaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserByReferralCode",
 			Handler:    _KarmaService_GetUserByReferralCode_Handler,
+		},
+		{
+			MethodName: "ExchangeReward",
+			Handler:    _KarmaService_ExchangeReward_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
