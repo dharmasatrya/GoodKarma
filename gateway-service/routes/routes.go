@@ -79,7 +79,6 @@ func NewRouter() *echo.Echo {
 	payment := e.Group("/payments")
 	payment.GET("/wallets", paymentController.GetWalletByUserId)
 	payment.POST("/withdraw", paymentController.Withdraw)
-	payment.POST("/invoice", paymentController.XenditInvoiceCallback)
 	payment.POST("/xenditcallback/invoice", paymentController.XenditInvoiceCallback)
 	payment.POST("/xenditcallback/disbursement", paymentController.XenditDisbursementCallback)
 
