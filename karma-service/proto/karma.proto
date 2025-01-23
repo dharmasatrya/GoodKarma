@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package karma;
+option go_package = "./proto";
+
+service KarmaService {
+    rpc CreateKarma (CreateKarmaRequest) returns (CreateKarmaResponse);
+}
+
+message CreateKarmaRequest {
+    string user_id = 1;
+    uint32 amount = 2;
+}
+
+message CreateKarmaResponse {
+    string id = 1;
+    string user_id = 2;
+    uint32 amount = 3;
+}
