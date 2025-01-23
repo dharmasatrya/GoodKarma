@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	karmaPb "github.com/dharmasatrya/goodkarma/karma-service/proto"
 	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/dharmasatrya/goodkarma/user-service/entity"
@@ -25,14 +26,16 @@ type UserService struct {
 	userRepository repository.UserRepository
 	messageBroker  MessageBroker
 	paymentClient  paymentPb.PaymentServiceClient
+	karmaClient    karmaPb.KarmaServiceClient
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker, paymentClient paymentPb.PaymentServiceClient) *UserService {
+func NewUserService(userRepository repository.UserRepository, messageBroker MessageBroker, paymentClient paymentPb.PaymentServiceClient, karmaClient karmaPb.KarmaServiceClient) *UserService {
 	return &UserService{
 		userRepository: userRepository,
 		messageBroker:  messageBroker,
 		paymentClient:  paymentClient,
+		karmaClient:    karmaClient,
 	}
 }
 
@@ -60,14 +63,14 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		return nil, err
 	}
 
-	_, err = us.paymentClient.CreateKarma(context.Background(), &paymentPb.CreateKarmaRequest{
+	_, err = us.karmaClient.CreateKarma(context.Background(), &karmaPb.CreateKarmaRequest{
 		UserId: result.ID.Hex(),
 		Amount: 0,
 	})
 
 	if req.ReferralCode != "" {
 		// Get referral count
-		referralCount, err := us.paymentClient.GetReferralCount(context.Background(), &paymentPb.GetReferralCountRequest{
+		referralCount, err := us.karmaClient.GetReferralCount(context.Background(), &karmaPb.GetReferralCountRequest{
 			ReferralCode: req.ReferralCode,
 		})
 
@@ -95,7 +98,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		log.Printf("referral count: %v", referralCount.Count)
 		log.Printf("karma amount: %v", karmaAmount)
 		// Update karma amount for referrer
-		_, err = us.paymentClient.UpdateKarmaAmount(context.Background(), &paymentPb.UpdateKarmaAmountRequest{
+		_, err = us.karmaClient.UpdateKarmaAmount(context.Background(), &karmaPb.UpdateKarmaAmountRequest{
 			UserId: userIdReferrer,
 			Amount: karmaAmount,
 		})
@@ -105,7 +108,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		}
 
 		// Update karma amount for referee
-		_, err = us.paymentClient.UpdateKarmaAmount(context.Background(), &paymentPb.UpdateKarmaAmountRequest{
+		_, err = us.karmaClient.UpdateKarmaAmount(context.Background(), &karmaPb.UpdateKarmaAmountRequest{
 			UserId: result.ID.Hex(),
 			Amount: karmaAmount,
 		})
@@ -115,7 +118,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		}
 
 		// Create referral log
-		_, err = us.paymentClient.CreateReferralLog(context.Background(), &paymentPb.CreateReferralLogRequest{
+		_, err = us.karmaClient.CreateReferralLog(context.Background(), &karmaPb.CreateReferralLogRequest{
 			UserId:       result.ID.Hex(),
 			ReferralCode: req.ReferralCode,
 		})
