@@ -6,10 +6,11 @@ import (
 	"net"
 	"os"
 
+	karmaPb "github.com/dharmasatrya/goodkarma/karma-service/proto"
 	paymentPb "github.com/dharmasatrya/goodkarma/payment-service/proto"
+	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 
 	"github.com/dharmasatrya/goodkarma/user-service/config"
-	pb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/dharmasatrya/goodkarma/user-service/repository"
 	"github.com/dharmasatrya/goodkarma/user-service/service"
 
@@ -56,8 +57,19 @@ func main() {
 	// Initialize payment client
 	paymentClient := paymentPb.NewPaymentServiceClient(grpcConn)
 
+	// Initialize karma client
+	karmaServiceURI := os.Getenv("KARMA_SERVICE_URI")
+
+	grpcConn, err = grpc.NewClient(karmaServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to karma service: %v", err)
+	}
+	defer grpcConn.Close()
+
+	karmaClient := karmaPb.NewKarmaServiceClient(grpcConn)
+
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository, messageBrokerService, paymentClient)
+	userService := service.NewUserService(userRepository, messageBrokerService, paymentClient, karmaClient)
 
 	pb.RegisterUserServiceServer(server, userService)
 

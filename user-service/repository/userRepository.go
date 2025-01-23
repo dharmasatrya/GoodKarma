@@ -19,6 +19,7 @@ type UserRepository interface {
 	GetUserById(string) (*entity.DetailUser, error)
 	UpdateProfile(entity.UpdateProfileRequest) (*entity.DetailUser, error)
 	VerifyEmail(string) error
+	GetUserByReferralCode(string) (string, error)
 }
 
 type userRepository struct {
@@ -54,13 +55,16 @@ func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporter
 		return nil, err
 	}
 
+	referralCode := strings.ToUpper(request.Username)
+
 	newUser := entity.User{
 		ID:            primitive.NewObjectID(),
 		Username:      request.Username,
 		Email:         request.Email,
 		Password:      string(hashedPassword),
-		Role:          request.Role,
+		Role:          "supporter",
 		EmailVerified: false,
+		ReferralCode:  referralCode,
 	}
 
 	insertUser, err := userCollection.InsertOne(context.Background(), newUser)
@@ -94,7 +98,7 @@ func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordin
 		Username: request.Username,
 		Email:    request.Email,
 		Password: request.Password,
-		Role:     request.Role,
+		Role:     "coordinator",
 		FullName: request.FullName,
 		Address:  request.Address,
 		Phone:    request.Phone,
@@ -254,4 +258,21 @@ func (ur *userRepository) validateCreateUser(request entity.CreateUserSupporterR
 	}
 
 	return nil
+}
+
+func (ur *userRepository) GetUserByReferralCode(referralCode string) (string, error) {
+	userCollection := ur.GetUserCollection()
+
+	var user entity.User
+
+	err := userCollection.FindOne(context.Background(), primitive.M{"referral_code": referralCode}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return "", fmt.Errorf("referral code not found")
+		}
+		return "", err
+	}
+
+	return user.ID.Hex(), nil
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	entity "github.com/dharmasatrya/goodkarma/user-service/entity"
+	"google.golang.org/grpc/status"
 
 	"github.com/labstack/echo/v4"
 )
@@ -29,6 +30,14 @@ func (us *userController) RegisterUserSupporter(c echo.Context) error {
 	err := us.userService.RegisterUserSupporter(payload)
 
 	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+				Message: grpcErr.Message(),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
 		})
@@ -52,6 +61,14 @@ func (us *userController) RegisterUserCoordinator(c echo.Context) error {
 	err := us.userService.RegisterUserCoordinator(payload)
 
 	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+				Message: grpcErr.Message(),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
 		})
@@ -75,6 +92,14 @@ func (us *userController) Login(c echo.Context) error {
 	result, err := us.userService.Login(payload)
 
 	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+				Message: grpcErr.Message(),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
 		})
@@ -92,6 +117,14 @@ func (us *userController) GetUserById(c echo.Context) error {
 	result, err := us.userService.GetUserById(id)
 
 	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+				Message: grpcErr.Message(),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
 		})
@@ -109,6 +142,14 @@ func (us *userController) VerifyEmail(c echo.Context) error {
 	_, err := us.userService.VerifyEmail(token)
 
 	if err != nil {
+		grpcErr, ok := status.FromError(err)
+
+		if ok {
+			return c.JSON(http.StatusInternalServerError, entity.ResponseError{
+				Message: grpcErr.Message(),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, entity.ResponseError{
 			Message: err.Error(),
 		})

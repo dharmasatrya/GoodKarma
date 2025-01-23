@@ -9,6 +9,7 @@ type User struct {
 	Password      string             `json:"password" bson:"password"`
 	Role          string             `json:"role" bson:"role"`
 	EmailVerified bool               `json:"email_verified" bson:"email_verified"`
+	ReferralCode  string             `json:"referral_code" bson:"referral_code"`
 }
 
 type Profile struct {
@@ -31,23 +32,16 @@ type DetailUser struct {
 	Photo    string             `json:"photo" bson:"photo"`
 }
 
-type Wallet struct {
-	ID                primitive.ObjectID `json:"id" bson:"_id"`
-	UserID            primitive.ObjectID `json:"user_id" bson:"user_id"`
-	AccountHolderName string             `json:"account_holder_name" bson:"account_holder_name"`
-	BankCode          string             `json:"bank_code" bson:"bank_code"`
-	BankAccountNumber string             `json:"bank_account_number" bson:"bank_account_number"`
-}
-
 type CreateUserSupporterRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
-	FullName string `json:"full_name"`
-	Address  string `json:"address"`
-	Phone    string `json:"phone"`
-	Photo    string `json:"photo"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	Password     string `json:"password"`
+	Role         string `json:"role"`
+	FullName     string `json:"full_name"`
+	Address      string `json:"address"`
+	Phone        string `json:"phone"`
+	Photo        string `json:"photo"`
+	ReferralCode string `json:"referral_code"`
 }
 
 type CreateUserCoordinatorRequest struct {

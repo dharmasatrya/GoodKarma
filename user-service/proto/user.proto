@@ -21,6 +21,7 @@ message CreateUserSupporterRequest {
     string address = 6;
     string phone = 7;
     string photo = 8;
+    string referral_code = 9;
 }
 
 message CreateUserSupporterResponse {
