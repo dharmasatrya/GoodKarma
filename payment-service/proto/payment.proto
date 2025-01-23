@@ -99,6 +99,7 @@ message CreateInvoiceResponse {
 message ChargeFeesRequest {
     string user_id = 1;
     uint32 amount = 2;
+    string type = 3;
 }
 
 message ChargeFeesResponse {
