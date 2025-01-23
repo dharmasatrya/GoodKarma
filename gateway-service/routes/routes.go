@@ -33,9 +33,16 @@ func NewRouter() *echo.Echo {
 		e.Logger.Fatalf("did not connect: %v", err)
 	}
 
-	// userClient := pb.NewUserServiceClient(userConnection)
+	karmaClient, err := config.InitKarmaServiceClient()
+	if err != nil {
+		e.Logger.Fatalf("did not connect: %v", err)
+	}
+
 	userService := service.NewUserService(userClient)
 	userController := controller.NewUserController(userService)
+
+	karmaService := service.NewKarmaService(karmaClient)
+	karmaController := controller.NewKarmaController(karmaService)
 
 	eventService := service.NewEventService(eventClient)
 	eventController := controller.NewEventController(eventService)
@@ -57,6 +64,11 @@ func NewRouter() *echo.Echo {
 		user.POST("/login", userController.Login)
 		user.GET("/:id", userController.GetUserById)
 		user.GET("/email/verify/:token", userController.VerifyEmail)
+	}
+
+	karma := e.Group("/karma")
+	{
+		karma.GET("/reward", karmaController.GetKarmaReward)
 	}
 
 	event := e.Group("/events")

@@ -5,6 +5,7 @@ go 1.23.5
 require (
 	github.com/dharmasatrya/goodkarma/donation-service v0.0.0-20250120163630-0be5ef3fd993
 	github.com/dharmasatrya/goodkarma/event-service v0.0.0-00010101000000-000000000000
+	github.com/dharmasatrya/goodkarma/karma-service v0.0.0-00010101000000-000000000000
 	github.com/dharmasatrya/goodkarma/payment-service v0.0.0-20250120132112-a701142f86ee
 	github.com/dharmasatrya/goodkarma/user-service v0.0.0-20250120085545-5b1cef43f774
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -51,3 +52,5 @@ replace github.com/dharmasatrya/goodkarma/payment-service => ../payment-service
 replace github.com/dharmasatrya/goodkarma/event-service => ../event-service
 
 replace github.com/dharmasatrya/goodkarma/user-service => ../user-service
+
+replace github.com/dharmasatrya/goodkarma/karma-service => ../karma-service
