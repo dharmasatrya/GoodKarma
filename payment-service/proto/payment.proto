@@ -14,11 +14,6 @@ service PaymentService {
     rpc GetWalletByUserId (google.protobuf.Empty) returns (GetWalletResponse);
     rpc XenditInvoiceCallback (XenditInvoiceCallbackRequest) returns (Donation);
     rpc XenditDisbursementCallback (XenditDisbursementCallbackRequest) returns (UpdateWalleetBalanceResponse);
-    rpc CreateKarma (CreateKarmaRequest) returns (CreateKarmaResponse);
-    rpc GetReferralCount (GetReferralCountRequest) returns (GetReferralCountResponse);
-    rpc CreateReferralLog (CreateReferralLogRequest) returns (Empty);
-    rpc UpdateKarmaAmount (UpdateKarmaAmountRequest) returns (Empty);
-    rpc GetUserByReferralCode (GetUserByReferralCodeRequest) returns (GetUserByReferralCodeResponse);
 }
 
 message CreateWalletRequest {
@@ -98,43 +93,6 @@ message CreateInvoiceRequest {
 
 message CreateInvoiceResponse {
     string invoice_url = 1;
-}
-
-message CreateKarmaRequest {
-    string user_id = 1;
-    uint32 amount = 2;
-}
-
-message CreateKarmaResponse {
-    string id = 1;
-    string user_id = 2;
-    uint32 amount = 3;
-}
-
-message GetUserByReferralCodeRequest {
-    string referral_code = 1;
-}
-
-message GetUserByReferralCodeResponse {
-    string user_id = 1;
-}
-
-message GetReferralCountRequest {
-    string referral_code = 1;
-}
-
-message GetReferralCountResponse {
-    uint32 count = 1;
-}
-
-message CreateReferralLogRequest {
-    string user_id = 1;
-    string referral_code = 2;
-}
-
-message UpdateKarmaAmountRequest {
-    string user_id = 1;
-    uint32 amount = 2;
 }
 
 message Empty {}
