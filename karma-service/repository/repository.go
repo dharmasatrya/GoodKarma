@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/dharmasatrya/goodkarma/karma-service/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +15,8 @@ type KarmaRepository interface {
 	CreateKarma(context.Context, entity.CreateKarmaRequest) (*entity.Karma, error)
 	GetReferralCount(context.Context, string) (uint32, error)
 	CreateReferralLog(context.Context, entity.ReferralLog) error
+	UpdateKarmaAmount(context.Context, entity.UpdateKarmaRequest) error
+	GetUserByReferralCode(context.Context, string) (string, error)
 }
 
 type karmaRepository struct {
@@ -79,4 +82,41 @@ func (r *karmaRepository) CreateReferralLog(ctx context.Context, payload entity.
 	}
 
 	return nil
+}
+
+func (r *karmaRepository) UpdateKarmaAmount(ctx context.Context, payload entity.UpdateKarmaRequest) error {
+	karmaCollection := r.GetKarmaCollection()
+
+	userID, err := primitive.ObjectIDFromHex(payload.UserID)
+
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"user_id": userID}
+	update := bson.M{"$inc": bson.M{"amount": payload.Amount}}
+
+	log.Printf("Filter: %+v, Update: %+v", filter, update)
+
+	_, err = karmaCollection.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *karmaRepository) GetUserByReferralCode(ctx context.Context, referralCode string) (string, error) {
+	karmaCollection := r.GetKarmaCollection()
+
+	var karma entity.Karma
+
+	err := karmaCollection.FindOne(ctx, bson.M{"referral_code": referralCode}).Decode(&karma)
+
+	if err != nil {
+		return "", err
+	}
+
+	return karma.UserID.Hex(), nil
 }

@@ -64,3 +64,28 @@ func (s *KarmaService) CreateReferralLog(ctx context.Context, req *pb.CreateRefe
 
 	return &pb.Empty{}, nil
 }
+
+func (s *KarmaService) UpdateKarmaAmount(ctx context.Context, req *pb.UpdateKarmaAmountRequest) (*pb.Empty, error) {
+	karma := entity.UpdateKarmaRequest{
+		UserID: req.UserId,
+		Amount: req.Amount,
+	}
+
+	err := s.KarmaRepository.UpdateKarmaAmount(ctx, karma)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating karma")
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (s *KarmaService) GetUserByReferralCode(ctx context.Context, req *pb.GetUserByReferralCodeRequest) (*pb.GetUserByReferralCodeResponse, error) {
+	userID, err := s.KarmaRepository.GetUserByReferralCode(ctx, req.ReferralCode)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "user not found")
+	}
+
+	return &pb.GetUserByReferralCodeResponse{
+		UserId: userID,
+	}, nil
+}
