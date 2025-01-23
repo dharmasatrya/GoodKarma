@@ -5,6 +5,10 @@ option go_package = "./proto";
 
 service KarmaService {
     rpc CreateKarma (CreateKarmaRequest) returns (CreateKarmaResponse);
+    rpc GetReferralCount (GetReferralCountRequest) returns (GetReferralCountResponse);
+    rpc CreateReferralLog (CreateReferralLogRequest) returns (Empty);
+    rpc UpdateKarmaAmount (UpdateKarmaAmountRequest) returns (Empty);
+    rpc GetUserByReferralCode (GetUserByReferralCodeRequest) returns (GetUserByReferralCodeResponse);
 }
 
 message CreateKarmaRequest {
@@ -17,3 +21,31 @@ message CreateKarmaResponse {
     string user_id = 2;
     uint32 amount = 3;
 }
+
+message GetUserByReferralCodeRequest {
+    string referral_code = 1;
+}
+
+message GetUserByReferralCodeResponse {
+    string user_id = 1;
+}
+
+message GetReferralCountRequest {
+    string referral_code = 1;
+}
+
+message GetReferralCountResponse {
+    uint32 count = 1;
+}
+
+message CreateReferralLogRequest {
+    string user_id = 1;
+    string referral_code = 2;
+}
+
+message UpdateKarmaAmountRequest {
+    string user_id = 1;
+    uint32 amount = 2;
+}
+
+message Empty {}

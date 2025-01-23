@@ -19,7 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KarmaService_CreateKarma_FullMethodName = "/karma.KarmaService/CreateKarma"
+	KarmaService_CreateKarma_FullMethodName           = "/karma.KarmaService/CreateKarma"
+	KarmaService_GetReferralCount_FullMethodName      = "/karma.KarmaService/GetReferralCount"
+	KarmaService_CreateReferralLog_FullMethodName     = "/karma.KarmaService/CreateReferralLog"
+	KarmaService_UpdateKarmaAmount_FullMethodName     = "/karma.KarmaService/UpdateKarmaAmount"
+	KarmaService_GetUserByReferralCode_FullMethodName = "/karma.KarmaService/GetUserByReferralCode"
 )
 
 // KarmaServiceClient is the client API for KarmaService service.
@@ -27,6 +31,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KarmaServiceClient interface {
 	CreateKarma(ctx context.Context, in *CreateKarmaRequest, opts ...grpc.CallOption) (*CreateKarmaResponse, error)
+	GetReferralCount(ctx context.Context, in *GetReferralCountRequest, opts ...grpc.CallOption) (*GetReferralCountResponse, error)
+	CreateReferralLog(ctx context.Context, in *CreateReferralLogRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateKarmaAmount(ctx context.Context, in *UpdateKarmaAmountRequest, opts ...grpc.CallOption) (*Empty, error)
+	GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error)
 }
 
 type karmaServiceClient struct {
@@ -47,11 +55,55 @@ func (c *karmaServiceClient) CreateKarma(ctx context.Context, in *CreateKarmaReq
 	return out, nil
 }
 
+func (c *karmaServiceClient) GetReferralCount(ctx context.Context, in *GetReferralCountRequest, opts ...grpc.CallOption) (*GetReferralCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetReferralCountResponse)
+	err := c.cc.Invoke(ctx, KarmaService_GetReferralCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *karmaServiceClient) CreateReferralLog(ctx context.Context, in *CreateReferralLogRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, KarmaService_CreateReferralLog_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *karmaServiceClient) UpdateKarmaAmount(ctx context.Context, in *UpdateKarmaAmountRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, KarmaService_UpdateKarmaAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *karmaServiceClient) GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserByReferralCodeResponse)
+	err := c.cc.Invoke(ctx, KarmaService_GetUserByReferralCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KarmaServiceServer is the server API for KarmaService service.
 // All implementations must embed UnimplementedKarmaServiceServer
 // for forward compatibility.
 type KarmaServiceServer interface {
 	CreateKarma(context.Context, *CreateKarmaRequest) (*CreateKarmaResponse, error)
+	GetReferralCount(context.Context, *GetReferralCountRequest) (*GetReferralCountResponse, error)
+	CreateReferralLog(context.Context, *CreateReferralLogRequest) (*Empty, error)
+	UpdateKarmaAmount(context.Context, *UpdateKarmaAmountRequest) (*Empty, error)
+	GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error)
 	mustEmbedUnimplementedKarmaServiceServer()
 }
 
@@ -64,6 +116,18 @@ type UnimplementedKarmaServiceServer struct{}
 
 func (UnimplementedKarmaServiceServer) CreateKarma(context.Context, *CreateKarmaRequest) (*CreateKarmaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateKarma not implemented")
+}
+func (UnimplementedKarmaServiceServer) GetReferralCount(context.Context, *GetReferralCountRequest) (*GetReferralCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReferralCount not implemented")
+}
+func (UnimplementedKarmaServiceServer) CreateReferralLog(context.Context, *CreateReferralLogRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateReferralLog not implemented")
+}
+func (UnimplementedKarmaServiceServer) UpdateKarmaAmount(context.Context, *UpdateKarmaAmountRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKarmaAmount not implemented")
+}
+func (UnimplementedKarmaServiceServer) GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByReferralCode not implemented")
 }
 func (UnimplementedKarmaServiceServer) mustEmbedUnimplementedKarmaServiceServer() {}
 func (UnimplementedKarmaServiceServer) testEmbeddedByValue()                      {}
@@ -104,6 +168,78 @@ func _KarmaService_CreateKarma_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KarmaService_GetReferralCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReferralCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).GetReferralCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_GetReferralCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).GetReferralCount(ctx, req.(*GetReferralCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KarmaService_CreateReferralLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateReferralLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).CreateReferralLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_CreateReferralLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).CreateReferralLog(ctx, req.(*CreateReferralLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KarmaService_UpdateKarmaAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateKarmaAmountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).UpdateKarmaAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_UpdateKarmaAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).UpdateKarmaAmount(ctx, req.(*UpdateKarmaAmountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KarmaService_GetUserByReferralCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByReferralCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).GetUserByReferralCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_GetUserByReferralCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).GetUserByReferralCode(ctx, req.(*GetUserByReferralCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KarmaService_ServiceDesc is the grpc.ServiceDesc for KarmaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +250,22 @@ var KarmaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateKarma",
 			Handler:    _KarmaService_CreateKarma_Handler,
+		},
+		{
+			MethodName: "GetReferralCount",
+			Handler:    _KarmaService_GetReferralCount_Handler,
+		},
+		{
+			MethodName: "CreateReferralLog",
+			Handler:    _KarmaService_CreateReferralLog_Handler,
+		},
+		{
+			MethodName: "UpdateKarmaAmount",
+			Handler:    _KarmaService_UpdateKarmaAmount_Handler,
+		},
+		{
+			MethodName: "GetUserByReferralCode",
+			Handler:    _KarmaService_GetUserByReferralCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

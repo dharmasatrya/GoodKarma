@@ -39,3 +39,28 @@ func (s *KarmaService) CreateKarma(ctx context.Context, req *pb.CreateKarmaReque
 		Amount: reult.Amount,
 	}, nil
 }
+
+func (s *KarmaService) GetReferralCount(ctx context.Context, req *pb.GetReferralCountRequest) (*pb.GetReferralCountResponse, error) {
+	count, err := s.KarmaRepository.GetReferralCount(ctx, req.ReferralCode)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting referral count")
+	}
+
+	return &pb.GetReferralCountResponse{
+		Count: count,
+	}, nil
+}
+
+func (s *KarmaService) CreateReferralLog(ctx context.Context, req *pb.CreateReferralLogRequest) (*pb.Empty, error) {
+	referral := entity.ReferralLog{
+		UserID:       req.UserId,
+		ReferralCode: req.ReferralCode,
+	}
+
+	err := s.KarmaRepository.CreateReferralLog(ctx, referral)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error creating referral log")
+	}
+
+	return &pb.Empty{}, nil
+}
