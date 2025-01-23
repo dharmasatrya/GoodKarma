@@ -29,3 +29,27 @@ func (kc *KarmaController) GetKarmaReward(c echo.Context) error {
 		Data:    res,
 	})
 }
+
+func (kc *KarmaController) ExchangeReward(c echo.Context) error {
+	id := c.Param("id")
+	jwtToken := c.Request().Header.Get("Authorization")
+
+	if jwtToken == "" {
+		return c.JSON(401, dto.ResponseError{
+			Message: "No token provided",
+		})
+	}
+
+	err := kc.karmaService.ExchangeReward(jwtToken, id)
+
+	if err != nil {
+		return c.JSON(500, dto.ResponseError{
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(200, dto.ResponseOK{
+		Message: "Success",
+		Data:    nil,
+	})
+}

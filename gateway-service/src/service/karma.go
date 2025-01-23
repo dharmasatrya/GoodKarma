@@ -6,10 +6,12 @@ import (
 	entity "github.com/dharmasatrya/goodkarma/karma-service/entity"
 	pb "github.com/dharmasatrya/goodkarma/karma-service/proto"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc/metadata"
 )
 
 type KarmaService interface {
 	GetKarmaReward() ([]entity.KarmaReward, error)
+	ExchangeReward(string, string) error
 }
 
 type karmaService struct {
@@ -39,9 +41,24 @@ func (s *karmaService) GetKarmaReward() ([]entity.KarmaReward, error) {
 			ID:          rewardId,
 			Name:        reward.Name,
 			Description: reward.Description,
-			Amount:      reward.Amount,
+			Amount:      int(reward.Amount),
 		})
 	}
 
 	return rewards, nil
+}
+
+func (s *karmaService) ExchangeReward(jwtToken, karmaRewardID string) error {
+	md := metadata.Pairs("authorization", jwtToken)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	_, err := s.karmaClient.ExchangeReward(ctx, &pb.ExchangeRewardRequest{
+		KarmaRewardId: karmaRewardID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

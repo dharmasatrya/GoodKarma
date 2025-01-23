@@ -51,8 +51,7 @@ message UpdateKarmaAmountRequest {
 }
 
 message ExchangeRewardRequest {
-    string user_id = 1;
-    string karma_reward_id = 2;
+    string karma_reward_id = 1;
 }
 
 message KarmaReward {

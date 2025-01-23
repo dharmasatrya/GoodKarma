@@ -185,25 +185,6 @@ func (r *karmaRepository) ExchangeReward(ctx context.Context, payload entity.Exc
 
 	var karmaReward entity.KarmaReward
 
-	// Get karma amount
-	karma, err := r.GetKarmaByUserID(ctx, payload.UserID)
-
-	if err != nil {
-		return err
-	}
-
-	// Get karma reward
-	err = karmaRewardCollection.FindOne(ctx, bson.M{"_id": payload.KarmaRewardID}).Decode(&karmaReward)
-
-	if err != nil {
-		return err
-	}
-
-	// Check if karma is sufficient
-	if karma.Amount < karmaReward.Amount {
-		return fmt.Errorf("insufficient karma")
-	}
-
 	userID, err := primitive.ObjectIDFromHex(payload.UserID)
 
 	if err != nil {
@@ -214,6 +195,27 @@ func (r *karmaRepository) ExchangeReward(ctx context.Context, payload entity.Exc
 
 	if err != nil {
 		return err
+	}
+
+	// Get karma amount
+	karma, err := r.GetKarmaByUserID(ctx, payload.UserID)
+
+	log.Printf("Karma: %+v", karma)
+	if err != nil {
+		return err
+	}
+
+	// Get karma reward
+	err = karmaRewardCollection.FindOne(ctx, bson.M{"_id": karmaRewardID}).Decode(&karmaReward)
+
+	log.Printf("Karma Reward: %+v", karmaReward)
+	if err != nil {
+		return err
+	}
+
+	// Check if karma is sufficient
+	if karma.Amount < karmaReward.Amount {
+		return fmt.Errorf("insufficient karma")
 	}
 
 	karmaTrx := entity.KarmaTransaction{

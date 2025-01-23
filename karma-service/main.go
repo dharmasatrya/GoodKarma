@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/dharmasatrya/goodkarma/karma-service/middleware"
 	pb "github.com/dharmasatrya/goodkarma/karma-service/proto"
 
 	"github.com/dharmasatrya/goodkarma/karma-service/config"
@@ -31,7 +32,9 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
+	)
 
 	karmaRepository := repository.NewKarmaRepository(db)
 	karmaService := service.NewKarmaService(karmaRepository)

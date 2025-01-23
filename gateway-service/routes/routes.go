@@ -69,6 +69,7 @@ func NewRouter() *echo.Echo {
 	karma := e.Group("/karma")
 	{
 		karma.GET("/reward", karmaController.GetKarmaReward)
+		karma.POST("/reward/:id/exchange", karmaController.ExchangeReward)
 	}
 
 	event := e.Group("/events")
