@@ -103,3 +103,24 @@ func (s *KarmaService) ExchangeReward(ctx context.Context, req *pb.ExchangeRewar
 
 	return &pb.Empty{}, nil
 }
+
+func (s *KarmaService) GetKarmaReward(ctx context.Context, req *pb.Empty) (*pb.GetKarmaRewardResponse, error) {
+	rewards, err := s.KarmaRepository.GetKarmaReward(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting karma rewards")
+	}
+
+	var res []*pb.KarmaReward
+	for _, reward := range rewards {
+		res = append(res, &pb.KarmaReward{
+			Id:          reward.ID.Hex(),
+			Name:        reward.Name,
+			Amount:      reward.Amount,
+			Description: reward.Description,
+		})
+	}
+
+	return &pb.GetKarmaRewardResponse{
+		Rewards: res,
+	}, nil
+}

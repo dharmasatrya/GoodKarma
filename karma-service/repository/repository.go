@@ -19,6 +19,7 @@ type KarmaRepository interface {
 	UpdateKarmaAmount(context.Context, entity.UpdateKarmaRequest) error
 	GetUserByReferralCode(context.Context, string) (string, error)
 	ExchangeReward(context.Context, entity.ExchangeRewardRequest) error
+	GetKarmaReward(context.Context) ([]entity.KarmaReward, error)
 }
 
 type karmaRepository struct {
@@ -149,6 +150,33 @@ func (r *karmaRepository) GetUserByReferralCode(ctx context.Context, referralCod
 	}
 
 	return karma.UserID.Hex(), nil
+}
+
+func (r *karmaRepository) GetKarmaReward(ctx context.Context) ([]entity.KarmaReward, error) {
+	karmaRewardCollection := r.GetKarmaRewardCollection()
+
+	var karmaReward []entity.KarmaReward
+
+	cursor, err := karmaRewardCollection.Find(ctx, bson.M{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var reward entity.KarmaReward
+		err := cursor.Decode(&reward)
+
+		if err != nil {
+			return nil, err
+		}
+
+		karmaReward = append(karmaReward, reward)
+	}
+
+	return karmaReward, nil
 }
 
 func (r *karmaRepository) ExchangeReward(ctx context.Context, payload entity.ExchangeRewardRequest) error {

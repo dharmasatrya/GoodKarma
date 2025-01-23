@@ -10,6 +10,7 @@ service KarmaService {
     rpc UpdateKarmaAmount (UpdateKarmaAmountRequest) returns (Empty);
     rpc GetUserByReferralCode (GetUserByReferralCodeRequest) returns (GetUserByReferralCodeResponse);
     rpc ExchangeReward (ExchangeRewardRequest) returns (Empty);
+    rpc GetKarmaReward (Empty) returns (GetKarmaRewardResponse);
 }
 
 message CreateKarmaRequest {
@@ -52,6 +53,17 @@ message UpdateKarmaAmountRequest {
 message ExchangeRewardRequest {
     string user_id = 1;
     string karma_reward_id = 2;
+}
+
+message KarmaReward {
+    string id = 1;
+    string name = 2;
+    uint32 amount = 3;
+    string description = 4;
+}
+
+message GetKarmaRewardResponse {
+    repeated KarmaReward rewards = 1;
 }
 
 message Empty {}
