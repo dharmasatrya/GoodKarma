@@ -318,3 +318,72 @@ func (s *PaymentService) XenditDisbursementCallback(ctx context.Context, req *pb
 		Amount:            res.Amount,
 	}, nil
 }
+
+func (s *PaymentService) CreateKarma(ctx context.Context, req *pb.CreateKarmaRequest) (*pb.CreateKarmaResponse, error) {
+	karma := entity.CreateKarmaRequest{
+		UserID: req.UserId,
+		Amount: req.Amount,
+	}
+
+	reult, err := s.paymentRepository.CreateKarma(ctx, karma)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error creating karma")
+	}
+
+	return &pb.CreateKarmaResponse{
+		Id:     reult.ID.Hex(),
+		UserId: reult.UserID.Hex(),
+		Amount: reult.Amount,
+	}, nil
+}
+
+func (s *PaymentService) GetReferralCount(ctx context.Context, req *pb.GetReferralCountRequest) (*pb.GetReferralCountResponse, error) {
+	count, err := s.paymentRepository.GetReferralCount(ctx, req.ReferralCode)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting referral count")
+	}
+
+	return &pb.GetReferralCountResponse{
+		Count: count,
+	}, nil
+}
+
+func (s *PaymentService) CreateReferralLog(ctx context.Context, req *pb.CreateReferralLogRequest) (*pb.Empty, error) {
+	referral := entity.ReferralLog{
+		UserID:       req.UserId,
+		ReferralCode: req.ReferralCode,
+	}
+
+	err := s.paymentRepository.CreateReferralLog(ctx, referral)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error creating referral log")
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (s *PaymentService) UpdateKarmaAmount(ctx context.Context, req *pb.UpdateKarmaAmountRequest) (*pb.Empty, error) {
+	karma := entity.UpdateKarmaRequest{
+		UserID: req.UserId,
+		Amount: req.Amount,
+	}
+
+	err := s.paymentRepository.UpdateKarmaAmount(ctx, karma)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error updating karma")
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (s *PaymentService) GetUserByReferralCode(ctx context.Context, req *pb.GetUserByReferralCodeRequest) (*pb.GetUserByReferralCodeResponse, error) {
+	userID, err := s.paymentRepository.GetUserByReferralCode(ctx, req.ReferralCode)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "user not found")
+	}
+
+	return &pb.GetUserByReferralCodeResponse{
+		UserId: userID,
+	}, nil
+}

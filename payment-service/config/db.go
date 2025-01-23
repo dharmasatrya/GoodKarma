@@ -10,10 +10,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
+func ConnectionDB(ctx context.Context) (*mongo.Database, error) {
 	MONGO_URI := os.Getenv("MONGO_URI")
 	MONGO_DB := os.Getenv("MONGO_DATABASE")
-	MONGODB_COLLECTION := os.Getenv("MONGO_COLLECTION")
+	// MONGODB_COLLECTION := os.Getenv("MONGO_COLLECTION")
 
 	if MONGO_URI == "" {
 		MONGO_URI = "mongodb://localhost:27017"
@@ -33,8 +33,8 @@ func ConnectionDB(ctx context.Context) (*mongo.Collection, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %v", err)
 	}
 
-	walletCollection := client.Database(MONGO_DB).Collection(MONGODB_COLLECTION)
-	fmt.Printf("Successfully connected to MongoDB %v, collection: %v", MONGO_DB, MONGODB_COLLECTION)
+	walletCollection := client.Database(MONGO_DB)
+	fmt.Printf("Successfully connected to MongoDB %v", MONGO_DB)
 
 	return walletCollection, nil
 }

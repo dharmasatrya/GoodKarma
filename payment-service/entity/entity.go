@@ -60,3 +60,14 @@ type XenditDisbursementRequest struct {
 type XenditInvoiceResponse struct {
 	InvoiceURL string `json:"invoice_url"`
 }
+
+type Karma struct {
+	ID     primitive.ObjectID `bson:"_id,omitempty"`
+	UserID primitive.ObjectID `bson:"user_id"`
+	Amount uint32             `bson:"amount"`
+}
+
+type CreateKarmaRequest struct {
+	UserID string `json:"user_id" bson:"user_id"`
+	Amount uint32 `json:"amount" bson:"amount"`
+}

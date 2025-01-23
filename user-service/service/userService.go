@@ -60,6 +60,71 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		return nil, err
 	}
 
+	_, err = us.paymentClient.CreateKarma(context.Background(), &paymentPb.CreateKarmaRequest{
+		UserId: result.ID.Hex(),
+		Amount: 0,
+	})
+
+	if req.ReferralCode != "" {
+		// Get referral count
+		referralCount, err := us.paymentClient.GetReferralCount(context.Background(), &paymentPb.GetReferralCountRequest{
+			ReferralCode: req.ReferralCode,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Calculate karma
+		karmaAmount := uint32(0)
+
+		if referralCount.Count >= 0 {
+			karmaAmount = uint32(5000)
+		} else if referralCount.Count > 10 && referralCount.Count < 20 {
+			karmaAmount = uint32(10000)
+		} else {
+			karmaAmount = uint32(15000)
+		}
+
+		userIdReferrer, err := us.userRepository.GetUserByReferralCode(req.ReferralCode)
+
+		if err != nil {
+			return nil, err
+		}
+
+		log.Printf("referral count: %v", referralCount.Count)
+		log.Printf("karma amount: %v", karmaAmount)
+		// Update karma amount for referrer
+		_, err = us.paymentClient.UpdateKarmaAmount(context.Background(), &paymentPb.UpdateKarmaAmountRequest{
+			UserId: userIdReferrer,
+			Amount: karmaAmount,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Update karma amount for referee
+		_, err = us.paymentClient.UpdateKarmaAmount(context.Background(), &paymentPb.UpdateKarmaAmountRequest{
+			UserId: result.ID.Hex(),
+			Amount: karmaAmount,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Create referral log
+		_, err = us.paymentClient.CreateReferralLog(context.Background(), &paymentPb.CreateReferralLogRequest{
+			UserId:       result.ID.Hex(),
+			ReferralCode: req.ReferralCode,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	tokenString, err := us.generateJWTToken(result)
 
 	// Send email verification
@@ -226,15 +291,6 @@ func (us *UserService) validateCreateUserRequest(req entity.CreateUserSupporterR
 
 	if len(req.Password) < 8 {
 		return fmt.Errorf("password must be at least 8 characters")
-	}
-
-	if req.Role == "" {
-		return fmt.Errorf("role is required")
-	}
-
-	allowedRoles := map[string]bool{"supporter": true, "coordinator": true}
-	if !allowedRoles[req.Role] {
-		return fmt.Errorf("role is invalid")
 	}
 
 	if req.FullName == "" {
