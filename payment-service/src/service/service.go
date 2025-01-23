@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -184,7 +185,7 @@ func (s *PaymentService) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 	}
 
 	invoice := entity.XenditInvoiceRequest{
-		ExternalId:  userDetail.Id,
+		ExternalId:  req.ExternalId,
 		Amount:      int(req.Amount),
 		Description: req.Description,
 		Name:        userDetail.FullName,
@@ -340,6 +341,7 @@ func (s *PaymentService) ChargeFees(ctx context.Context, req *pb.ChargeFeesReque
 
 	_, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
 	if err != nil {
+		log.Println("error updating balance to master account")
 		return nil, status.Errorf(codes.Internal, "error updating balance to master account")
 	}
 
@@ -352,6 +354,7 @@ func (s *PaymentService) ChargeFees(ctx context.Context, req *pb.ChargeFeesReque
 
 		_, err := s.paymentRepository.UpdateWalletBalance(ctx, balanceShift)
 		if err != nil {
+			log.Println("error updating balance to master account")
 			return nil, status.Errorf(codes.Internal, "error updating balance to master account")
 		}
 	}

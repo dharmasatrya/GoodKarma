@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gateway-service/dto"
+	"log"
 	"net/http"
 	"os"
 
@@ -88,6 +89,7 @@ func (u *paymentService) UpdateInvoiceWalletBalance(callbackToken string, input 
 		DonationId: input.DonationID,
 	})
 	if err != nil {
+		log.Println("XenditInvoiceCallback err %v:", err)
 		return http.StatusInternalServerError, nil
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
 	"github.com/dharmasatrya/goodkarma/donation-service/middleware"
@@ -38,17 +39,20 @@ func main() {
 		log.Fatalf("Error connecting to db")
 	}
 
-	paymentServiceUrl := "localhost:50053"
+	paymentServiceUrl := os.Getenv("PAYMENT_SERVICE_URI")
+
 	paymentClient, err := client.NewPaymentServiceClient(paymentServiceUrl)
 	if err != nil {
-		log.Fatalf("Failed to create user service client: %v", err)
+		log.Fatalf("Failed to create payment service client: %v", err)
 	}
+	log.Println("Success payment client to: %v", paymentServiceUrl)
 
-	eventServiceUrl := "localhost:50053"
+	eventServiceUrl := os.Getenv("EVENT_SERVICE_URI")
 	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
 	if err != nil {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
+	log.Println("Success payment client to: %v", eventServiceUrl)
 
 	donationRepository := repository.NewDonationRepository(db)
 

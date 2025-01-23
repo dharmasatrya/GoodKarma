@@ -1,24 +1,23 @@
 package config
 
 import (
+	"crypto/tls"
 	"os"
 
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 func InitEventServiceClient() (pb.EventServiceClient, error) {
-	grpcUri := os.Getenv("EVENT_SERVICE_URI")
-
-	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	eventConnection, err := grpc.Dial(os.Getenv("EVENT_SERVICE_URI"), grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 
 	if err != nil {
 		return nil, err
 	}
 
-	userClient := pb.NewEventServiceClient(userConnection)
+	eventClient := pb.NewEventServiceClient(eventConnection)
 
-	return userClient, nil
+	return eventClient, nil
 }

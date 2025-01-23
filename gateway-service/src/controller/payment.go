@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"gateway-service/dto"
 	"gateway-service/src/service"
 	"net/http"
@@ -77,8 +76,6 @@ func (h *paymentController) XenditInvoiceCallback(c echo.Context) error {
 	if callbackToken == "" {
 		return c.JSON(http.StatusUnauthorized, "Missing callback token")
 	}
-
-	fmt.Println(callbackToken)
 
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")

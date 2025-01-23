@@ -2,12 +2,13 @@
 package client
 
 import (
+	"crypto/tls"
 	"log"
 	"os"
 
 	pb "github.com/dharmasatrya/goodkarma/user-service/proto" // Import user service proto
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type UserServiceClient struct {
@@ -16,7 +17,7 @@ type UserServiceClient struct {
 
 func NewUserServiceClient(userServiceUrl string) (*UserServiceClient, error) {
 	grpcUri := os.Getenv("USER_SERVICE_URI")
-	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 	if err != nil {
 		log.Fatalf("Failed to connect to user service: %v", err)
 		return nil, err
