@@ -1,23 +1,6 @@
 version: '3.8'
 
-# networks:
-#   shared-network:
-#     driver: bridge
-
 services:
-  # mongodb:
-  #   image: mongo:latest
-  #   container_name: mongodb-goodkarma
-  #   restart: always
-  #   environment:
-  #     - MONGO_INITDB_DATABASE=goodkarma
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #   networks:
-  #     - shared-network
-  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq-goodkarma
@@ -30,8 +13,6 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    # networks:
-    #   - shared-network
 
   user-service:
     build: 
@@ -41,10 +22,7 @@ services:
     restart: always
     ports:
       - "50051:50051"
-    # networks:
-    #   - shared-network
     depends_on:
-      # - mongodb
       - rabbitmq
     env_file:
       - ./user-service/.env
@@ -57,10 +35,6 @@ services:
     restart: always
     ports:
       - "50052:50052"
-    # networks:
-    #   - shared-network
-    # depends_on:
-    #   - mongodb
     env_file:
       - ./donation-service/.env
 
@@ -72,10 +46,6 @@ services:
     restart: always
     ports:
       - "50053:50053"
-    # networks:
-    #   - shared-network
-    # depends_on:
-    #   - mongodb
     env_file:
       - ./payment-service/.env
 
@@ -103,10 +73,19 @@ services:
     restart: always
     ports:
       - "50055:50055"
-    # networks:
-    #   - shared-network
     env_file:
       - ./event-service/.env
+
+  karma-service:
+    build: 
+      context: .
+      dockerfile: ./karma-service/Dockerfile
+    container_name: karma-service
+    restart: always
+    ports:
+      - "50056:50056"
+    env_file:
+      - ./karma-service/.env
 
   gateway-service:
     build: 
@@ -114,16 +93,8 @@ services:
       dockerfile: ./gateway-service/Dockerfile
     container_name: gateway-service
     restart: always
-    # environment:
-    #   - USER_SERVICE_URL=user-service:50051
-    #   - DONATION_SERVICE_URL=donation-service:50052
-    #   - PAYMENT_SERVICE_URL=payment-service:50053
-    #   - NOTIFICATION_SERVICE_URL=notification-service:50054
-    #   - EVENT_SERVICE_URL=event-service:50055
     ports:
       - "8080:8080"
-    # networks:
-    #   - shared-network
     depends_on:
       - user-service
       - donation-service
@@ -134,5 +105,4 @@ services:
       - ./gateway-service/.env
 
 volumes:
-  # mongodb_data:
   rabbitmq_data:
