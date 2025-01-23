@@ -19,8 +19,6 @@ import (
 )
 
 func main() {
-	godotenv.Load()
-
 	listen, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -35,8 +33,6 @@ func main() {
 		grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor),
 	)
 
-	// grpcServer := grpc.NewServer()
-
 	db, err := config.ConnectionDB(context.Background())
 	if err != nil {
 		log.Fatalf("Error connecting to db")
@@ -48,9 +44,20 @@ func main() {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
+	eventServiceUrl := "localhost:50053"
+	eventClient, err := client.NewEventServiceClient(eventServiceUrl)
+	if err != nil {
+		log.Fatalf("Failed to create user service client: %v", err)
+	}
+
 	donationRepository := repository.NewDonationRepository(db)
 
-	donationService := service.NewDonationService(donationRepository, paymentClient)
+	conn, mbChan := config.InitMessageBroker()
+	defer conn.Close()
+
+	messageBrokerService := service.NewMessageBroker(mbChan)
+
+	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient, messageBrokerService)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")

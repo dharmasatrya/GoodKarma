@@ -10,7 +10,7 @@ import (
 )
 
 func InitEventServiceClient() (pb.EventServiceClient, error) {
-	grpcUri := os.Getenv("EVENT_SERVICE_DEV_URI")
+	grpcUri := os.Getenv("EVENT_SERVICE_URI")
 
 	userConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

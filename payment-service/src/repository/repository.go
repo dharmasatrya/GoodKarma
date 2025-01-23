@@ -35,7 +35,7 @@ func NewPaymentRepository(db *mongo.Database) *paymentRepository {
 }
 
 func (r *paymentRepository) CreateWallet(input entity.Wallet) (*entity.Wallet, error) {
-	paymentCollection := r.GetWalletCollection()
+	walletCollection := r.GetWalletCollection()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -49,7 +49,7 @@ func (r *paymentRepository) CreateWallet(input entity.Wallet) (*entity.Wallet, e
 		Amount:            0,
 	}
 
-	_, err2 := paymentCollection.InsertOne(ctx, wallet)
+	_, err2 := walletCollection.InsertOne(ctx, wallet)
 	if err2 != nil {
 		return nil, err2
 	}
@@ -58,10 +58,10 @@ func (r *paymentRepository) CreateWallet(input entity.Wallet) (*entity.Wallet, e
 }
 
 func (r *paymentRepository) GetWalletByUserId(ctx context.Context, userId string) (*entity.Wallet, error) {
-	paymentCollection := r.GetWalletCollection()
+	walletCollection := r.GetWalletCollection()
 
 	var wallet entity.Wallet
-	err := paymentCollection.FindOne(ctx, bson.M{"user_id": userId}).Decode(&wallet)
+	err := walletCollection.FindOne(ctx, bson.M{"user_id": userId}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("wallet not found")
@@ -72,14 +72,13 @@ func (r *paymentRepository) GetWalletByUserId(ctx context.Context, userId string
 }
 
 func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entity.UpdateWalleetBalanceRequest) (*entity.Wallet, error) {
-	paymentCollection := r.GetWalletCollection()
+	walletCollection := r.GetWalletCollection()
 
 	var wallet entity.Wallet
 
-	err := paymentCollection.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
+	err := walletCollection.FindOne(ctx, bson.M{"user_id": input.UserID}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("error 62", err, input.UserID)
 			return nil, fmt.Errorf("wallet not found")
 		}
 	}
@@ -93,7 +92,7 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	}
 
 	var updatedWallet entity.Wallet
-	err1 := paymentCollection.FindOneAndUpdate(
+	err1 := walletCollection.FindOneAndUpdate(
 		ctx,
 		bson.M{"_id": wallet.ID},
 		bson.M{"$set": bson.M{"amount": wallet.Amount}}, // Added the update operation
@@ -101,7 +100,6 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 	).Decode(&updatedWallet)
 
 	if err1 != nil {
-		fmt.Println("error 82", err1)
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("wallet not found")
 		}
@@ -112,11 +110,11 @@ func (r *paymentRepository) UpdateWalletBalance(ctx context.Context, input entit
 }
 
 func (r *paymentRepository) CheckBalanceForWithdrawal(ctx context.Context, input entity.WithdrawRequest) error {
-	paymentCollection := r.GetWalletCollection()
+	walletCollection := r.GetWalletCollection()
 
 	// First find the wallet
 	var wallet entity.Wallet
-	err := paymentCollection.FindOne(ctx, bson.M{"user_id": input.UserId}).Decode(&wallet)
+	err := walletCollection.FindOne(ctx, bson.M{"user_id": input.UserId}).Decode(&wallet)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return status.Errorf(codes.NotFound, "wallet not found")

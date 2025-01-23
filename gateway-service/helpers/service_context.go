@@ -17,7 +17,7 @@ func NewServiceContext(token string) (context.Context, context.CancelFunc, error
 	}
 
 	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
 	// Add the "authorization_user" metadata to the context
 	md := metadata.Pairs("authorization_user", token)

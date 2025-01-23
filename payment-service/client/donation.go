@@ -2,6 +2,7 @@ package client
 
 import (
 	"log"
+	"os"
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 	"google.golang.org/grpc"
@@ -13,7 +14,7 @@ type DonationServiceClient struct {
 }
 
 func NewDonationServiceClient(donationServiceUrl string) (*DonationServiceClient, error) {
-	grpcUri := "localhost:50052"
+	grpcUri := os.Getenv("DONATION_SERVICE_URI")
 	donationConnection, err := grpc.NewClient(grpcUri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to donation service: %v", err)

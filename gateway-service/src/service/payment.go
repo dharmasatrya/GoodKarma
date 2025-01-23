@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"gateway-service/dto"
-	"log"
 	"net/http"
 	"os"
 
@@ -15,7 +14,6 @@ import (
 
 type PaymentService interface {
 	Withdraw(token string, input dto.WithdrawRequest) (int, *dto.WithdrawResponse)
-	CreateInvoice(token string, input dto.CreateInvoiceRequest) (int, *dto.CreateInvoiceResponse)
 	GetWalletByUserId(token string) (int, *dto.Wallet)
 	UpdateInvoiceWalletBalance(callbackToken string, input dto.UpdateInvoiceBalanceRequest) (int, *dto.Donation)
 	UpdateDisbursementWalletBalance(callbackToken string, input dto.XenditDisbursementCallbackRequest) (int, *dto.Wallet)
@@ -37,27 +35,11 @@ func (u *paymentService) Withdraw(token string, input dto.WithdrawRequest) (int,
 		Amount: input.Amount,
 	})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.WithdrawResponse{
 		Message: res.Message,
-	}
-
-	return http.StatusOK, &response
-}
-
-func (u *paymentService) CreateInvoice(token string, input dto.CreateInvoiceRequest) (int, *dto.CreateInvoiceResponse) {
-	md := metadata.Pairs("authorization", token)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	res, err := u.Client.CreateInvoice(ctx, &pb.CreateInvoiceRequest{})
-	if err != nil {
-		log.Fatalf("error while create request %v", err)
-	}
-
-	response := dto.CreateInvoiceResponse{
-		InvoiceUrl: res.InvoiceUrl,
 	}
 
 	return http.StatusOK, &response
@@ -78,7 +60,7 @@ func (u *paymentService) UpdateDisbursementWalletBalance(callbackToken string, i
 	})
 
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.Wallet{
@@ -97,7 +79,6 @@ func (u *paymentService) UpdateInvoiceWalletBalance(callbackToken string, input 
 
 	expectedToken := os.Getenv("XENDIT_CALLBACK_TOKEN")
 	if callbackToken != expectedToken {
-		fmt.Println(callbackToken, "<<<<", expectedToken)
 		return http.StatusForbidden, nil
 	}
 
@@ -107,7 +88,7 @@ func (u *paymentService) UpdateInvoiceWalletBalance(callbackToken string, input 
 		DonationId: input.DonationID,
 	})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.Donation{
@@ -130,7 +111,7 @@ func (u *paymentService) GetWalletByUserId(token string) (int, *dto.Wallet) {
 
 	res, err := u.Client.GetWalletByUserId(ctx, &emptypb.Empty{})
 	if err != nil {
-		log.Fatalf("error while create request %v", err)
+		return http.StatusInternalServerError, nil
 	}
 
 	response := dto.Wallet{

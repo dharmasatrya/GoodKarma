@@ -2,15 +2,20 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/dharmasatrya/goodkarma/event-service/entity"
 	"github.com/dharmasatrya/goodkarma/event-service/helpers"
 	pb "github.com/dharmasatrya/goodkarma/event-service/proto"
 	"github.com/dharmasatrya/goodkarma/event-service/src/repository"
+	userpb "github.com/dharmasatrya/goodkarma/user-service/proto"
 	"github.com/golang-jwt/jwt/v4"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -19,10 +24,21 @@ import (
 type EventService struct {
 	pb.UnimplementedEventServiceServer
 	eventRepository repository.EventRepository
+	userClient      userpb.UserServiceClient
 }
 
 func NewEventService(eventRepository repository.EventRepository) *EventService {
-	return &EventService{eventRepository: eventRepository}
+	userServiceURI := os.Getenv("USER_SERVICE_URI")
+
+	grpcConn, err := grpc.NewClient(userServiceURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		log.Fatalf("Error koneksi user service: %v", err)
+	}
+
+	userClient := userpb.NewUserServiceClient(grpcConn)
+
+	return &EventService{eventRepository: eventRepository, userClient: userClient}
 }
 
 func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*pb.EventResponse, error) {
@@ -40,6 +56,10 @@ func (s *EventService) CreateEvent(ctx context.Context, req *pb.EventRequest) (*
 	userID, ok := claims["user_id"].(string)
 	if !ok {
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
+	}
+
+	if err := s.ValidateCreateEvent(ctx, userID); err != nil {
+		return nil, err
 	}
 
 	if err := validateCreateEventRequest(req); err != nil {
@@ -257,6 +277,20 @@ func validateCreateEventRequest(req *pb.EventRequest) error {
 
 	if req.DonationType == "" {
 		return status.Error(codes.InvalidArgument, "donation type is required")
+	}
+
+	return nil
+}
+
+func (s *EventService) ValidateCreateEvent(ctx context.Context, userID string) error {
+	user, err := s.userClient.GetUserById(ctx, &userpb.GetUserByIdRequest{Id: userID})
+
+	if err != nil {
+		return err
+	}
+
+	if user.Role != "coordinator" {
+		return fmt.Errorf("you do not have the necessary permissions to perform this action")
 	}
 
 	return nil

@@ -27,11 +27,7 @@ const (
 	PaymentService_GetWalletByUserId_FullMethodName          = "/payment.PaymentService/GetWalletByUserId"
 	PaymentService_XenditInvoiceCallback_FullMethodName      = "/payment.PaymentService/XenditInvoiceCallback"
 	PaymentService_XenditDisbursementCallback_FullMethodName = "/payment.PaymentService/XenditDisbursementCallback"
-	PaymentService_CreateKarma_FullMethodName                = "/payment.PaymentService/CreateKarma"
-	PaymentService_GetReferralCount_FullMethodName           = "/payment.PaymentService/GetReferralCount"
-	PaymentService_CreateReferralLog_FullMethodName          = "/payment.PaymentService/CreateReferralLog"
-	PaymentService_UpdateKarmaAmount_FullMethodName          = "/payment.PaymentService/UpdateKarmaAmount"
-	PaymentService_GetUserByReferralCode_FullMethodName      = "/payment.PaymentService/GetUserByReferralCode"
+	PaymentService_ChargeFees_FullMethodName                 = "/payment.PaymentService/ChargeFees"
 )
 
 // PaymentServiceClient is the client API for PaymentService service.
@@ -45,11 +41,7 @@ type PaymentServiceClient interface {
 	GetWalletByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetWalletResponse, error)
 	XenditInvoiceCallback(ctx context.Context, in *XenditInvoiceCallbackRequest, opts ...grpc.CallOption) (*Donation, error)
 	XenditDisbursementCallback(ctx context.Context, in *XenditDisbursementCallbackRequest, opts ...grpc.CallOption) (*UpdateWalleetBalanceResponse, error)
-	CreateKarma(ctx context.Context, in *CreateKarmaRequest, opts ...grpc.CallOption) (*CreateKarmaResponse, error)
-	GetReferralCount(ctx context.Context, in *GetReferralCountRequest, opts ...grpc.CallOption) (*GetReferralCountResponse, error)
-	CreateReferralLog(ctx context.Context, in *CreateReferralLogRequest, opts ...grpc.CallOption) (*Empty, error)
-	UpdateKarmaAmount(ctx context.Context, in *UpdateKarmaAmountRequest, opts ...grpc.CallOption) (*Empty, error)
-	GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error)
+	ChargeFees(ctx context.Context, in *ChargeFeesRequest, opts ...grpc.CallOption) (*ChargeFeesResponse, error)
 }
 
 type paymentServiceClient struct {
@@ -130,50 +122,10 @@ func (c *paymentServiceClient) XenditDisbursementCallback(ctx context.Context, i
 	return out, nil
 }
 
-func (c *paymentServiceClient) CreateKarma(ctx context.Context, in *CreateKarmaRequest, opts ...grpc.CallOption) (*CreateKarmaResponse, error) {
+func (c *paymentServiceClient) ChargeFees(ctx context.Context, in *ChargeFeesRequest, opts ...grpc.CallOption) (*ChargeFeesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateKarmaResponse)
-	err := c.cc.Invoke(ctx, PaymentService_CreateKarma_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *paymentServiceClient) GetReferralCount(ctx context.Context, in *GetReferralCountRequest, opts ...grpc.CallOption) (*GetReferralCountResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetReferralCountResponse)
-	err := c.cc.Invoke(ctx, PaymentService_GetReferralCount_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *paymentServiceClient) CreateReferralLog(ctx context.Context, in *CreateReferralLogRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, PaymentService_CreateReferralLog_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *paymentServiceClient) UpdateKarmaAmount(ctx context.Context, in *UpdateKarmaAmountRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, PaymentService_UpdateKarmaAmount_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *paymentServiceClient) GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserByReferralCodeResponse)
-	err := c.cc.Invoke(ctx, PaymentService_GetUserByReferralCode_FullMethodName, in, out, cOpts...)
+	out := new(ChargeFeesResponse)
+	err := c.cc.Invoke(ctx, PaymentService_ChargeFees_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -191,11 +143,7 @@ type PaymentServiceServer interface {
 	GetWalletByUserId(context.Context, *emptypb.Empty) (*GetWalletResponse, error)
 	XenditInvoiceCallback(context.Context, *XenditInvoiceCallbackRequest) (*Donation, error)
 	XenditDisbursementCallback(context.Context, *XenditDisbursementCallbackRequest) (*UpdateWalleetBalanceResponse, error)
-	CreateKarma(context.Context, *CreateKarmaRequest) (*CreateKarmaResponse, error)
-	GetReferralCount(context.Context, *GetReferralCountRequest) (*GetReferralCountResponse, error)
-	CreateReferralLog(context.Context, *CreateReferralLogRequest) (*Empty, error)
-	UpdateKarmaAmount(context.Context, *UpdateKarmaAmountRequest) (*Empty, error)
-	GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error)
+	ChargeFees(context.Context, *ChargeFeesRequest) (*ChargeFeesResponse, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
 
@@ -227,20 +175,8 @@ func (UnimplementedPaymentServiceServer) XenditInvoiceCallback(context.Context, 
 func (UnimplementedPaymentServiceServer) XenditDisbursementCallback(context.Context, *XenditDisbursementCallbackRequest) (*UpdateWalleetBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method XenditDisbursementCallback not implemented")
 }
-func (UnimplementedPaymentServiceServer) CreateKarma(context.Context, *CreateKarmaRequest) (*CreateKarmaResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateKarma not implemented")
-}
-func (UnimplementedPaymentServiceServer) GetReferralCount(context.Context, *GetReferralCountRequest) (*GetReferralCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetReferralCount not implemented")
-}
-func (UnimplementedPaymentServiceServer) CreateReferralLog(context.Context, *CreateReferralLogRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateReferralLog not implemented")
-}
-func (UnimplementedPaymentServiceServer) UpdateKarmaAmount(context.Context, *UpdateKarmaAmountRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateKarmaAmount not implemented")
-}
-func (UnimplementedPaymentServiceServer) GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserByReferralCode not implemented")
+func (UnimplementedPaymentServiceServer) ChargeFees(context.Context, *ChargeFeesRequest) (*ChargeFeesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChargeFees not implemented")
 }
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
 func (UnimplementedPaymentServiceServer) testEmbeddedByValue()                        {}
@@ -389,92 +325,20 @@ func _PaymentService_XenditDisbursementCallback_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PaymentService_CreateKarma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateKarmaRequest)
+func _PaymentService_ChargeFees_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChargeFeesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PaymentServiceServer).CreateKarma(ctx, in)
+		return srv.(PaymentServiceServer).ChargeFees(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PaymentService_CreateKarma_FullMethodName,
+		FullMethod: PaymentService_ChargeFees_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).CreateKarma(ctx, req.(*CreateKarmaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PaymentService_GetReferralCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetReferralCountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PaymentServiceServer).GetReferralCount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: PaymentService_GetReferralCount_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).GetReferralCount(ctx, req.(*GetReferralCountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PaymentService_CreateReferralLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateReferralLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PaymentServiceServer).CreateReferralLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: PaymentService_CreateReferralLog_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).CreateReferralLog(ctx, req.(*CreateReferralLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PaymentService_UpdateKarmaAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateKarmaAmountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PaymentServiceServer).UpdateKarmaAmount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: PaymentService_UpdateKarmaAmount_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).UpdateKarmaAmount(ctx, req.(*UpdateKarmaAmountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PaymentService_GetUserByReferralCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserByReferralCodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PaymentServiceServer).GetUserByReferralCode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: PaymentService_GetUserByReferralCode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).GetUserByReferralCode(ctx, req.(*GetUserByReferralCodeRequest))
+		return srv.(PaymentServiceServer).ChargeFees(ctx, req.(*ChargeFeesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -515,24 +379,8 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PaymentService_XenditDisbursementCallback_Handler,
 		},
 		{
-			MethodName: "CreateKarma",
-			Handler:    _PaymentService_CreateKarma_Handler,
-		},
-		{
-			MethodName: "GetReferralCount",
-			Handler:    _PaymentService_GetReferralCount_Handler,
-		},
-		{
-			MethodName: "CreateReferralLog",
-			Handler:    _PaymentService_CreateReferralLog_Handler,
-		},
-		{
-			MethodName: "UpdateKarmaAmount",
-			Handler:    _PaymentService_UpdateKarmaAmount_Handler,
-		},
-		{
-			MethodName: "GetUserByReferralCode",
-			Handler:    _PaymentService_GetUserByReferralCode_Handler,
+			MethodName: "ChargeFees",
+			Handler:    _PaymentService_ChargeFees_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
