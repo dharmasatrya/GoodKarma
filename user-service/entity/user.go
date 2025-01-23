@@ -9,7 +9,7 @@ type User struct {
 	Password      string             `json:"password" bson:"password"`
 	Role          string             `json:"role" bson:"role"`
 	EmailVerified bool               `json:"email_verified" bson:"email_verified"`
-	ReferralCode  string             `json:"referral_code" bson:"referral_code"`
+	ReferralCode  *string            `json:"referral_code,omitempty" bson:"referral_code,omitempty"`
 }
 
 type Profile struct {
