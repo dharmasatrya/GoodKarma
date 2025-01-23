@@ -68,62 +68,9 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		Amount: 0,
 	})
 
+	// If there is a referral code, process it
 	if req.ReferralCode != "" {
-		// Get referral count
-		referralCount, err := us.karmaClient.GetReferralCount(context.Background(), &karmaPb.GetReferralCountRequest{
-			ReferralCode: req.ReferralCode,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		// Calculate karma
-		karmaAmount := uint32(0)
-
-		if referralCount.Count >= 0 {
-			karmaAmount = uint32(5000)
-		} else if referralCount.Count > 10 && referralCount.Count < 20 {
-			karmaAmount = uint32(10000)
-		} else {
-			karmaAmount = uint32(15000)
-		}
-
-		userIdReferrer, err := us.userRepository.GetUserByReferralCode(req.ReferralCode)
-
-		if err != nil {
-			return nil, err
-		}
-
-		log.Printf("referral count: %v", referralCount.Count)
-		log.Printf("karma amount: %v", karmaAmount)
-		// Update karma amount for referrer
-		_, err = us.karmaClient.UpdateKarmaAmount(context.Background(), &karmaPb.UpdateKarmaAmountRequest{
-			UserId: userIdReferrer,
-			Amount: karmaAmount,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		// Update karma amount for referee
-		_, err = us.karmaClient.UpdateKarmaAmount(context.Background(), &karmaPb.UpdateKarmaAmountRequest{
-			UserId: result.ID.Hex(),
-			Amount: karmaAmount,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		// Create referral log
-		_, err = us.karmaClient.CreateReferralLog(context.Background(), &karmaPb.CreateReferralLogRequest{
-			UserId:       result.ID.Hex(),
-			ReferralCode: req.ReferralCode,
-		})
-
-		if err != nil {
+		if err := us.ProcessReferral(ctx, req.ReferralCode, result.ID.Hex()); err != nil {
 			return nil, err
 		}
 	}
@@ -190,7 +137,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 	}
 
 	// Create wallet
-	err = us.createWallet(result.ID.Hex(), reqBank)
+	err = us.CreateWallet(result.ID.Hex(), reqBank)
 
 	if err != nil {
 		return nil, err
@@ -355,7 +302,7 @@ func (us *UserService) generateJWTToken(user *entity.User) (string, error) {
 	return tokenString, nil
 }
 
-func (us *UserService) createWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
+func (us *UserService) CreateWallet(userID string, request entity.CreateUserCoordinatorRequest) error {
 	// Make the gRPC call to create a wallet
 	_, err := us.paymentClient.CreateWallet(context.Background(), &paymentPb.CreateWalletRequest{
 		UserId:            userID,
@@ -366,6 +313,53 @@ func (us *UserService) createWallet(userID string, request entity.CreateUserCoor
 
 	if err != nil {
 		return fmt.Errorf("failed to create wallet: %w", err)
+	}
+
+	return nil
+}
+
+// processReferral handles all referral-related logic.
+func (us *UserService) ProcessReferral(ctx context.Context, referralCode, refereeUserID string) error {
+	// Get referral count
+	referralCount, err := us.karmaClient.GetReferralCount(ctx, &karmaPb.GetReferralCountRequest{
+		ReferralCode: referralCode,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Get referrer user ID
+	referrerUserID, err := us.userRepository.GetUserByReferralCode(referralCode)
+	if err != nil {
+		return err
+	}
+
+	// Calculate karma amount
+	karmaAmountReferrer := calculateKarmaAmount(referralCount.Count)
+	karmaAmmountReferee := karmaAmountReferrer * 25 / 100
+
+	// Update karma for referrer
+	if _, err := us.karmaClient.UpdateKarmaAmount(ctx, &karmaPb.UpdateKarmaAmountRequest{
+		UserId: referrerUserID,
+		Amount: karmaAmountReferrer,
+	}); err != nil {
+		return err
+	}
+
+	// Update karma for referee
+	if _, err := us.karmaClient.UpdateKarmaAmount(ctx, &karmaPb.UpdateKarmaAmountRequest{
+		UserId: refereeUserID,
+		Amount: karmaAmmountReferee,
+	}); err != nil {
+		return err
+	}
+
+	// Create referral log
+	if _, err := us.karmaClient.CreateReferralLog(ctx, &karmaPb.CreateReferralLogRequest{
+		UserId:       refereeUserID,
+		ReferralCode: referralCode,
+	}); err != nil {
+		return err
 	}
 
 	return nil
@@ -409,4 +403,16 @@ func (us *UserService) sendEmail(email, tokenString string) error {
 	}
 
 	return nil
+}
+
+// calculateKarmaAmount determines the karma amount based on the referral count.
+func calculateKarmaAmount(referralCount uint32) uint32 {
+	switch {
+	case referralCount >= 20:
+		return 15000
+	case referralCount > 10:
+		return 10000
+	default:
+		return 5000
+	}
 }
