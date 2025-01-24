@@ -68,6 +68,7 @@ func (us *UserService) CreateUserSupporter(ctx context.Context, req *pb.CreateUs
 		Amount: 0,
 	})
 
+	log.Println("Referral code:", req.ReferralCode)
 	// If there is a referral code, process it
 	if req.ReferralCode != "" {
 		if err := us.ProcessReferral(ctx, req.ReferralCode, result.ID.Hex()); err != nil {
@@ -358,6 +359,8 @@ func (us *UserService) ProcessReferral(ctx context.Context, referralCode, refere
 		return err
 	}
 
+	log.Println("Referee user id:", refereeUserID)
+	log.Println("referral code:", referralCode)
 	// Create referral log
 	if _, err := us.karmaClient.CreateReferralLog(ctx, &karmaPb.CreateReferralLogRequest{
 		UserId:       refereeUserID,

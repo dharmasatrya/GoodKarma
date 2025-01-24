@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"gateway-service/src/service"
 	"net/http"
 
@@ -27,6 +28,7 @@ func (us *userController) RegisterUserSupporter(c echo.Context) error {
 		})
 	}
 
+	fmt.Println(payload.ReferralCode)
 	err := us.userService.RegisterUserSupporter(payload)
 
 	if err != nil {
