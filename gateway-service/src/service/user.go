@@ -25,14 +25,15 @@ func NewUserService(userClient pb.UserServiceClient) *userService {
 
 func (us *userService) RegisterUserSupporter(payload entity.CreateUserSupporterRequest) error {
 	_, err := us.Client.CreateUserSupporter(context.Background(), &pb.CreateUserSupporterRequest{
-		Username: payload.Username,
-		Email:    payload.Email,
-		Password: payload.Password,
-		Role:     payload.Role,
-		FullName: payload.FullName,
-		Address:  payload.Address,
-		Phone:    payload.Phone,
-		Photo:    payload.Photo,
+		Username:     payload.Username,
+		Email:        payload.Email,
+		Password:     payload.Password,
+		Role:         payload.Role,
+		FullName:     payload.FullName,
+		Address:      payload.Address,
+		Phone:        payload.Phone,
+		Photo:        payload.Photo,
+		ReferralCode: payload.ReferralCode,
 	})
 
 	if err != nil {
@@ -52,6 +53,7 @@ func (us *userService) RegisterUserCoordinator(payload entity.CreateUserCoordina
 		Address:           payload.Address,
 		Phone:             payload.Phone,
 		Photo:             payload.Photo,
+		Nik:               payload.NIK,
 		AccountHolderName: payload.AccountHolderName,
 		BankCode:          payload.BankCode,
 		BankAccountNumber: payload.BankAccountNumber,

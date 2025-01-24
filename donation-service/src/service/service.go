@@ -61,18 +61,21 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 	// Get claims from context
 	claims, ok := ctx.Value("claims").(jwt.MapClaims)
 	if !ok {
+		log.Println("failed to get user claims")
 		return nil, status.Errorf(codes.Internal, "failed to get user claims")
 	}
 
 	// Extract user_id from claims
 	userID, ok := claims["user_id"].(string)
 	if !ok {
+		log.Println("user_id not found in claims")
 		return nil, status.Errorf(codes.Internal, "user_id not found in claims")
 	}
 
 	// Start a MongoDB session for transaction
 	session, err := s.donationRepository.StartSession()
 	if err != nil {
+		log.Println("failed to start session: ", err)
 		return nil, status.Errorf(codes.Internal, "failed to start session: %v", err)
 	}
 	defer session.EndSession(ctx)
@@ -81,6 +84,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 	var donation *entity.Donation
 	err = session.StartTransaction()
 	if err != nil {
+		log.Println("failed to start transaction: ", err)
 		return nil, status.Errorf(codes.Internal, "failed to start transaction: %v", err)
 	}
 
@@ -117,6 +121,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 				Description: "Goodkarma donation",
 			})
 			if err != nil {
+				log.Println("failed to create invoice: ", err)
 				// Roll back transaction by aborting
 				if abortErr := session.AbortTransaction(sessCtx); abortErr != nil {
 					return status.Errorf(codes.Internal, "failed to abort transaction: %v", abortErr)
@@ -128,6 +133,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 		// 3. Save donation to database
 		savedDonation, err := s.donationRepository.CreateDonationWithSession(sessCtx, newDonation)
 		if err != nil {
+			log.Println("failed to create donation: ", err)
 			// Roll back transaction by aborting
 			if abortErr := session.AbortTransaction(sessCtx); abortErr != nil {
 				return status.Errorf(codes.Internal, "failed to abort transaction: %v", abortErr)
@@ -139,6 +145,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 
 		// 4. Commit the transaction
 		if err := session.CommitTransaction(sessCtx); err != nil {
+			log.Println("failed to commit transaction: ", err)
 			return status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
 		}
 
@@ -146,6 +153,7 @@ func (s *DonationService) CreateDonation(ctx context.Context, req *pb.CreateDona
 	})
 
 	if err != nil {
+		log.Println("failed to execute transaction: ", err)
 		return nil, err
 	}
 

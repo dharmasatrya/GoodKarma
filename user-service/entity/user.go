@@ -19,6 +19,7 @@ type Profile struct {
 	Address  string             `json:"address" bson:"address"`
 	Phone    string             `json:"phone" bson:"phone"`
 	Photo    string             `json:"photo" bson:"photo"`
+	NIK      string             `json:"nik,omitempty" bson:"nik,omitempty"`
 }
 
 type DetailUser struct {
@@ -53,6 +54,7 @@ type CreateUserCoordinatorRequest struct {
 	Address           string `json:"address"`
 	Phone             string `json:"phone"`
 	Photo             string `json:"photo"`
+	NIK               string `json:"nik"`
 	AccountHolderName string `json:"account_holder_name"`
 	BankCode          string `json:"bank_code"`
 	BankAccountNumber string `json:"bank_account_number"`

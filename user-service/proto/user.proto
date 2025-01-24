@@ -37,9 +37,10 @@ message CreateUserCoordinatorRequest {
     string address = 6;
     string phone = 7;
     string photo = 8;
-    string bank_code = 9;
-    string bank_account_number = 10;
-    string account_holder_name = 11;
+    string nik = 9;
+    string bank_code = 10;
+    string bank_account_number = 11;
+    string account_holder_name = 12;
 }
 
 message CreateUserCoordinatorResponse {
