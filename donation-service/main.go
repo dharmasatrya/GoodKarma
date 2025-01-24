@@ -50,6 +50,11 @@ func main() {
 		log.Fatalf("Failed to create user service client: %v", err)
 	}
 
+	karmaClient, err := client.NewKarmaServiceClient()
+	if err != nil {
+		log.Fatalf("Failed to create karma service client: %v", err)
+	}
+
 	donationRepository := repository.NewDonationRepository(db)
 
 	conn, mbChan := config.InitMessageBroker()
@@ -57,7 +62,7 @@ func main() {
 
 	messageBrokerService := service.NewMessageBroker(mbChan)
 
-	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient, messageBrokerService)
+	donationService := service.NewDonationService(donationRepository, paymentClient, eventClient, karmaClient, messageBrokerService)
 	pb.RegisterDonationServiceServer(grpcServer, donationService)
 
 	log.Println("Server is running on port 50052...")

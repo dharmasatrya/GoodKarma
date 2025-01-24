@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/dharmasatrya/goodkarma/donation-service/client"
@@ -13,6 +14,7 @@ import (
 
 	pb "github.com/dharmasatrya/goodkarma/donation-service/proto"
 	eventpb "github.com/dharmasatrya/goodkarma/event-service/proto"
+	karmaPb "github.com/dharmasatrya/goodkarma/karma-service/proto"
 	paymentpb "github.com/dharmasatrya/goodkarma/payment-service/proto"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -28,6 +30,7 @@ type DonationService struct {
 	donationRepository repository.DonationRepository
 	paymentClient      *client.PaymentServiceClient
 	eventClient        *client.EventServiceClient
+	karmaClient        *client.KarmaServiceClient
 	messageBroker      MessageBroker
 }
 
@@ -36,12 +39,14 @@ func NewDonationService(
 	donationRepository repository.DonationRepository,
 	paymentClient *client.PaymentServiceClient,
 	eventClient *client.EventServiceClient,
+	karmaClient *client.KarmaServiceClient,
 	messageBroker MessageBroker,
 ) *DonationService {
 	return &DonationService{
 		donationRepository: donationRepository,
 		paymentClient:      paymentClient,
 		eventClient:        eventClient,
+		karmaClient:        karmaClient,
 		messageBroker:      messageBroker,
 	}
 }
@@ -222,6 +227,20 @@ func (s *DonationService) UpdateDonationStatusXendit(ctx context.Context, req *p
 	updatedDonation, err := s.donationRepository.UpdateDonationStatus(donation)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error updating donation status: %v", err)
+	}
+
+	// get cashback karma point
+	if updatedDonation.Status == "COMPLETED" && updatedDonation.DonationType == "uang" {
+		karmaPointCashback := updatedDonation.Amount * 10 / 100
+
+		_, err := s.karmaClient.Client.UpdateKarmaAmount(ctx, &karmaPb.UpdateKarmaAmountRequest{
+			UserId: updatedDonation.UserID,
+			Amount: uint32(karmaPointCashback),
+		})
+		if err != nil {
+			log.Printf("(donation-service): error updating karma point from callback xendit: %v", err)
+			return nil, status.Errorf(codes.Internal, "error updating karma point: %v", err)
+		}
 	}
 
 	return &pb.UpdateDonationStatusResponse{
