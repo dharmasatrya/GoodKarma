@@ -110,6 +110,8 @@ func (ur *userRepository) CreateUserSupporter(request entity.CreateUserSupporter
 }
 
 func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordinatorRequest) (*entity.User, error) {
+	profileCollection := ur.GetProfileCollection()
+
 	baseRequest := entity.CreateUserSupporterRequest{
 		Username: request.Username,
 		Email:    request.Email,
@@ -126,6 +128,15 @@ func (ur *userRepository) CreateUserCoordinator(request entity.CreateUserCoordin
 	}
 
 	user, err := ur.createBaseUser(baseRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = profileCollection.UpdateOne(
+		context.Background(),
+		bson.M{"user_id": user.ID},
+		bson.M{"$set": bson.M{"nik": request.NIK}},
+	)
 	if err != nil {
 		return nil, err
 	}

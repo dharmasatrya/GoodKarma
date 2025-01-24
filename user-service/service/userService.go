@@ -99,6 +99,7 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		Address:           req.Address,
 		Phone:             req.Phone,
 		Photo:             req.Photo,
+		NIK:               req.Nik,
 		AccountHolderName: req.AccountHolderName,
 		BankCode:          req.BankCode,
 		BankAccountNumber: req.BankAccountNumber,
@@ -108,7 +109,6 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
-		Role:     req.Role,
 		FullName: req.FullName,
 		Address:  req.Address,
 		Phone:    req.Phone,
@@ -122,6 +122,10 @@ func (us *UserService) CreateUserCoordinator(ctx context.Context, req *pb.Create
 	}
 
 	if err := us.validateCreateUserRequest(reqUser); err != nil {
+		return nil, err
+	}
+
+	if err := helper.ValidateNIK(req.Nik); err != nil {
 		return nil, err
 	}
 

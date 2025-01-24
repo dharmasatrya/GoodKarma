@@ -52,6 +52,7 @@ func (us *userService) RegisterUserCoordinator(payload entity.CreateUserCoordina
 		Address:           payload.Address,
 		Phone:             payload.Phone,
 		Photo:             payload.Photo,
+		Nik:               payload.NIK,
 		AccountHolderName: payload.AccountHolderName,
 		BankCode:          payload.BankCode,
 		BankAccountNumber: payload.BankAccountNumber,
