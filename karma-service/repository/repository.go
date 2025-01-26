@@ -20,6 +20,7 @@ type KarmaRepository interface {
 	GetUserByReferralCode(context.Context, string) (string, error)
 	ExchangeReward(context.Context, entity.ExchangeRewardRequest) error
 	GetKarmaReward(context.Context) ([]entity.KarmaReward, error)
+	CashbackDonation(context.Context, entity.CashbackDonationRequest) error
 }
 
 type karmaRepository struct {
@@ -236,6 +237,21 @@ func (r *karmaRepository) ExchangeReward(ctx context.Context, payload entity.Exc
 		UserID: payload.UserID,
 		Amount: -karmaReward.Amount,
 	})
+
+	return nil
+}
+
+func (r *karmaRepository) CashbackDonation(ctx context.Context, payload entity.CashbackDonationRequest) error {
+	karmaPointCashback := payload.Amount * 10 / 100
+
+	err := r.UpdateKarmaAmount(ctx, entity.UpdateKarmaRequest{
+		UserID: payload.UserID,
+		Amount: karmaPointCashback,
+	})
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

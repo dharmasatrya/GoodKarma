@@ -46,3 +46,8 @@ type ExchangeRewardRequest struct {
 	UserID        string `json:"user_id" bson:"user_id"`
 	KarmaRewardID string `json:"karma_reward_id" bson:"karma_reward_id"`
 }
+
+type CashbackDonationRequest struct {
+	UserID string `json:"user_id" bson:"user_id"`
+	Amount int    `json:"amount" bson:"amount"`
+}

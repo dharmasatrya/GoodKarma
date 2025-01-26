@@ -239,15 +239,13 @@ func (s *DonationService) UpdateDonationStatusXendit(ctx context.Context, req *p
 
 	// get cashback karma point
 	if updatedDonation.Status == "COMPLETED" && updatedDonation.DonationType == "uang" {
-		karmaPointCashback := updatedDonation.Amount * 10 / 100
-
-		_, err := s.karmaClient.Client.UpdateKarmaAmount(ctx, &karmaPb.UpdateKarmaAmountRequest{
+		_, err := s.karmaClient.Client.CashbackDonation(ctx, &karmaPb.CashbackDonationRequest{
 			UserId: updatedDonation.UserID,
-			Amount: uint32(karmaPointCashback),
+			Amount: uint32(updatedDonation.Amount),
 		})
 		if err != nil {
 			log.Printf("(donation-service): error updating karma point from callback xendit: %v", err)
-			return nil, status.Errorf(codes.Internal, "error updating karma point: %v", err)
+			return nil, status.Errorf(codes.Internal, "error updating karma point")
 		}
 	}
 

@@ -11,6 +11,7 @@ service KarmaService {
     rpc GetUserByReferralCode (GetUserByReferralCodeRequest) returns (GetUserByReferralCodeResponse);
     rpc ExchangeReward (ExchangeRewardRequest) returns (Empty);
     rpc GetKarmaReward (Empty) returns (GetKarmaRewardResponse);
+    rpc CashbackDonation (CashbackDonationRequest) returns (Empty);
 }
 
 message CreateKarmaRequest {
@@ -63,6 +64,11 @@ message KarmaReward {
 
 message GetKarmaRewardResponse {
     repeated KarmaReward rewards = 1;
+}
+
+message CashbackDonationRequest {
+    string user_id = 1;
+    uint32 amount = 2;
 }
 
 message Empty {}

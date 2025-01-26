@@ -141,3 +141,18 @@ func (s *KarmaService) GetKarmaReward(ctx context.Context, req *pb.Empty) (*pb.G
 		Rewards: res,
 	}, nil
 }
+
+func (s *KarmaService) CashbackDonation(ctx context.Context, req *pb.CashbackDonationRequest) (*pb.Empty, error) {
+	donation := entity.CashbackDonationRequest{
+		UserID: req.UserId,
+		Amount: int(req.Amount),
+	}
+
+	err := s.KarmaRepository.CashbackDonation(ctx, donation)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &pb.Empty{}, nil
+}

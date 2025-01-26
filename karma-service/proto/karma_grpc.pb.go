@@ -26,6 +26,7 @@ const (
 	KarmaService_GetUserByReferralCode_FullMethodName = "/karma.KarmaService/GetUserByReferralCode"
 	KarmaService_ExchangeReward_FullMethodName        = "/karma.KarmaService/ExchangeReward"
 	KarmaService_GetKarmaReward_FullMethodName        = "/karma.KarmaService/GetKarmaReward"
+	KarmaService_CashbackDonation_FullMethodName      = "/karma.KarmaService/CashbackDonation"
 )
 
 // KarmaServiceClient is the client API for KarmaService service.
@@ -39,6 +40,7 @@ type KarmaServiceClient interface {
 	GetUserByReferralCode(ctx context.Context, in *GetUserByReferralCodeRequest, opts ...grpc.CallOption) (*GetUserByReferralCodeResponse, error)
 	ExchangeReward(ctx context.Context, in *ExchangeRewardRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetKarmaReward(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetKarmaRewardResponse, error)
+	CashbackDonation(ctx context.Context, in *CashbackDonationRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type karmaServiceClient struct {
@@ -119,6 +121,16 @@ func (c *karmaServiceClient) GetKarmaReward(ctx context.Context, in *Empty, opts
 	return out, nil
 }
 
+func (c *karmaServiceClient) CashbackDonation(ctx context.Context, in *CashbackDonationRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, KarmaService_CashbackDonation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KarmaServiceServer is the server API for KarmaService service.
 // All implementations must embed UnimplementedKarmaServiceServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type KarmaServiceServer interface {
 	GetUserByReferralCode(context.Context, *GetUserByReferralCodeRequest) (*GetUserByReferralCodeResponse, error)
 	ExchangeReward(context.Context, *ExchangeRewardRequest) (*Empty, error)
 	GetKarmaReward(context.Context, *Empty) (*GetKarmaRewardResponse, error)
+	CashbackDonation(context.Context, *CashbackDonationRequest) (*Empty, error)
 	mustEmbedUnimplementedKarmaServiceServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedKarmaServiceServer) ExchangeReward(context.Context, *Exchange
 }
 func (UnimplementedKarmaServiceServer) GetKarmaReward(context.Context, *Empty) (*GetKarmaRewardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKarmaReward not implemented")
+}
+func (UnimplementedKarmaServiceServer) CashbackDonation(context.Context, *CashbackDonationRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CashbackDonation not implemented")
 }
 func (UnimplementedKarmaServiceServer) mustEmbedUnimplementedKarmaServiceServer() {}
 func (UnimplementedKarmaServiceServer) testEmbeddedByValue()                      {}
@@ -308,6 +324,24 @@ func _KarmaService_GetKarmaReward_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KarmaService_CashbackDonation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CashbackDonationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KarmaServiceServer).CashbackDonation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KarmaService_CashbackDonation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KarmaServiceServer).CashbackDonation(ctx, req.(*CashbackDonationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KarmaService_ServiceDesc is the grpc.ServiceDesc for KarmaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +376,10 @@ var KarmaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetKarmaReward",
 			Handler:    _KarmaService_GetKarmaReward_Handler,
+		},
+		{
+			MethodName: "CashbackDonation",
+			Handler:    _KarmaService_CashbackDonation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
